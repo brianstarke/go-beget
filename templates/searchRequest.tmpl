@@ -1,0 +1,196 @@
+package search
+/*
+	GENERATED CODE, DO NOT EDIT
+
+	generated from {{.TypeName}} using http://github.com/brianstarke/go-begetter/generator/searcher
+*/
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/getbread/zeus/searcher"
+	zeus "github.com/getbread/zeus/types"
+)
+
+type {{.TypeName}}SearchField int
+
+const ({{$typeName := .TypeName}}
+{{range $i, $x := .SearchableFields}}{{$typeName}}Search_{{$x.Name}} {{if eq $i 0}}{{$typeName}}SearchField = iota{{end}}
+{{end}})
+
+func (s {{.TypeName}}SearchField) MarshalText() ([]byte, error) {
+	var data string
+
+	switch s {
+	{{range $i, $x := .SearchableFields}}case {{$typeName}}Search_{{$x.Name}}:
+		data = "{{$x.JsonName}}"
+	{{end}}
+	default:
+		return nil, fmt.Errorf("Cannot marshal text '%v'", s)
+	}
+	return []byte(data), nil
+}
+
+func (s {{.TypeName}}SearchField) MarshalBinary() ([]byte, error) {
+	var data string
+
+	switch s {
+	{{range $i, $x := .SearchableFields}}case {{$typeName}}Search_{{$x.Name}}:
+		data = "{{$x.JsonName}}"
+	{{end}}
+	default:
+		return nil, fmt.Errorf("Cannot marshal binary '%v'", s)
+	}
+	return []byte(data), nil
+}
+
+func (s *{{.TypeName}}SearchField) UnmarshalText(b []byte) error {
+	str := strings.Trim(string(b), `"`)
+
+	switch str {
+	{{range $i, $x := .SearchableFields}}case "{{$x.JsonName}}":
+		*s = {{$typeName}}Search_{{$x.Name}}
+	{{end}}
+	default:
+		return fmt.Errorf("Cannot unmarshal text '%s'", str)
+	}
+	return nil
+}
+
+func (s *{{.TypeName}}SearchField) UnmarshalBinary(b []byte) error {
+	str := strings.Trim(string(b), `"`)
+
+	switch str {
+	{{range $i, $x := .SearchableFields}}case "{{$x.JsonName}}":
+		*s = {{$typeName}}Search_{{$x.Name}}
+	{{end}}
+	default:
+		return fmt.Errorf("Cannot unmarshal binary '%s'", str)
+	}
+	return nil
+}
+
+func (s {{.TypeName}}SearchField) DbFieldName() string {
+	switch s {
+	{{range $i, $x := .SearchableFields}}case {{$typeName}}Search_{{$x.Name}}:
+		return "{{$x.DbName}}"
+	{{end}}
+	}
+	return ""
+}
+
+type {{.TypeName}}SearchRequest struct {
+	searcher.SearchRequestFields
+	Filters []{{.TypeName}}SearchFilter `json:"filters"`
+	OrderBy {{.TypeName}}OrderBy 		`json:"orderBy"`
+	Fields []{{.TypeName}}SearchField 	`json:"fields"`
+	IsByID  bool                		`json:"isById"`
+}
+
+type {{.TypeName}}SearchFilter struct {
+	Field {{.TypeName}}SearchField `json:"field"`
+	Value interface{} `json:"value"`
+	Operator searcher.FilterOperator `json:"operator"`
+	Condition searcher.FilterCondition `json:"condition"`
+}
+
+type {{.TypeName}}OrderBy struct {
+	Field {{.TypeName}}SearchField `json:"field"`
+	Descending bool `json:"desc"`
+}
+
+/*
+{{.TypeName}}ByID constructs a {{.TypeName}}SearchRequest to pull
+a {{.TypeName}} by it's ID.
+
+You can add additional options using functions.
+
+Handlers may choose to return (*{{.TypeName}}, error) by checking the
+IsSearchByID() function.
+*/
+func {{.TypeName}}ByID(ID zeus.Uuid, options ...func(*{{.TypeName}}SearchRequest)) {{.TypeName}}SearchRequest {
+	var searchRequest {{.TypeName}}SearchRequest
+
+	searchRequest.AddFilter(
+		{{.TypeName}}Search_{{.Id}},
+		ID,
+		searcher.Operator_EQ,
+		searcher.Condition_AND)
+
+	searchRequest.Limit = 1
+	searchRequest.IsByID = true
+
+	for _, f := range options {
+		f(&searchRequest)
+	}
+
+	return searchRequest
+}
+
+// implement searcher.SearchRequest interface
+func (sr *{{.TypeName}}SearchRequest) GetTableName() string {
+	return "{{.TableName}}"
+}
+
+func (sr *{{.TypeName}}SearchRequest) GetFilters() []searcher.Filter {
+	filters := []searcher.Filter{}
+
+	for _, f := range sr.Filters {
+		filter := searcher.Filter{
+			Field: f.Field,
+			Value: f.Value,
+			Operator: f.Operator,
+			Condition: f.Condition,
+		}
+		filters = append(filters, filter)
+	}
+
+	return filters
+}
+
+func (sr *{{.TypeName}}SearchRequest) GetOrderBy() searcher.OrderBy {
+	return searcher.OrderBy{
+		Field: sr.OrderBy.Field,
+		Descending: sr.OrderBy.Descending,
+	}
+}
+
+func (sr *{{.TypeName}}SearchRequest) GetLimit() int {
+	return sr.Limit
+}
+
+func (sr *{{.TypeName}}SearchRequest) GetOffset() int {
+	return sr.Offset
+}
+
+func (sr *{{.TypeName}}SearchRequest) IsSearchByID() bool {
+	return sr.IsByID
+}
+
+func (sr *{{.TypeName}}SearchRequest) AddFilter(field {{.TypeName}}SearchField, value interface{}, operator searcher.FilterOperator, condition searcher.FilterCondition){
+	f := {{.TypeName}}SearchFilter{
+		Field: field,
+		Value: value,
+		Operator: operator,
+		Condition: condition,
+	}
+	sr.Filters = append(sr.Filters, f)
+}
+
+func (sr *{{.TypeName}}SearchRequest) SetOrderBy(field {{.TypeName}}SearchField, isDescending bool) {
+	sr.OrderBy = {{.TypeName}}OrderBy{
+		Field: field,
+		Descending: isDescending,
+	}
+}
+
+func (sr *{{.TypeName}}SearchRequest) GetFields() []string {
+	fields := []string{}
+
+	for _, f := range sr.Fields {
+		fields = append(fields, f.DbFieldName())
+	}
+
+	return fields
+}
