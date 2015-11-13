@@ -1,5 +1,10 @@
 # go-begetter
+
+[![](https://godoc.org/github.com/brianstarke/go-begetter?status.svg)](http://godoc.org/github.com/brianstarke/go-begetter)
+
 Generate serializable and typesafe search/create/update/delete requests to pass to services.
+
+This is still a work in progress.
 
 ### Generator templates
 
