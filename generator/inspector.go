@@ -6,6 +6,8 @@ import (
 	"go/build"
 	"go/parser"
 	"go/token"
+	"path/filepath"
+	"strings"
 )
 
 /*
@@ -55,7 +57,25 @@ parses out the pertinents, and then returns the struct data to be used for
 generating files.
 */
 func GatherStructData(structName string) (*StructData, error) {
-	return nil, nil
+	file, err := findFile(structName)
+
+	if err != nil {
+		return nil, err
+	}
+
+	importPath, err := getImportPath()
+
+	if err != nil {
+		return nil, err
+	}
+
+	structData := &StructData{
+		Name:          structName,
+		PkgImportPath: importPath,
+		File:          file,
+	}
+
+	return structData, nil
 }
 
 /*
@@ -112,4 +132,30 @@ func containsStruct(f *ast.File, structName string) bool {
 	})
 
 	return hasIt
+}
+
+/*
+Attempts to find the import path we will use to import the struct type in to
+the generated files.
+*/
+func getImportPath() (string, error) {
+	pwd, err := filepath.Abs(".")
+
+	if err != nil {
+		return "", fmt.Errorf("Error getting absolute filepath: %s", err.Error())
+	}
+
+	pwd, err = filepath.EvalSymlinks(pwd)
+
+	if err != nil {
+		return "", fmt.Errorf("Error evaluating filepath symlinks: %s", err.Error())
+	}
+
+	startPos := strings.LastIndex(pwd, "src/")
+
+	if startPos == -1 {
+		return "", fmt.Errorf("Couldn't figure out what the package import path is from %s", pwd)
+	}
+
+	return pwd[startPos+4 : len(pwd)], nil
 }
