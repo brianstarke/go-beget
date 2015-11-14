@@ -16,11 +16,17 @@ import (
 
 	"github.com/brianstarke/go-begetter/generator"
 	"github.com/brianstarke/go-begetter/templates"
+	"github.com/mgutz/ansi"
 )
 
 var (
 	structName = flag.String("struct", "", "name of the struct to generate a searcher for")
 	tableName  = flag.String("table", "", "SQL table name if you want to generate SQLSearcher")
+
+	logPrefix = "[" +
+		ansi.Color("go-begetter", "154") +
+		"/" +
+		ansi.Color("searcher", "159") + "] "
 )
 
 /*
@@ -51,7 +57,7 @@ type TemplateData struct {
 
 func main() {
 	log.SetFlags(0)
-	log.SetPrefix("[go-begetter/searcher] ")
+	log.SetPrefix(logPrefix)
 
 	flag.Parse()
 
@@ -59,11 +65,10 @@ func main() {
 		log.Fatal("`struct` must be specified")
 	}
 
-	log.Printf("Generating searchers for struct `%s`", *structName)
+	log.Printf("Generating searcher for %s", ansi.Color(*structName, "155+b"))
 
 	pkg, _ := build.Default.ImportDir("../", 0)
 
-	log.Printf("Gathering struct data...")
 	data, err := generator.GatherStructData(*structName)
 
 	if err != nil {
@@ -171,7 +176,7 @@ func createSearchRequest(tmplData TemplateData) {
 		panic(err)
 	}
 
-	log.Printf("search request generated %s", output)
+	log.Printf("search request generated %s", ansi.Color(output, "155+b"))
 }
 
 func createSearcher(tmplData TemplateData) {
