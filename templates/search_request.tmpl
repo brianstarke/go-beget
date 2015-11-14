@@ -1,0 +1,155 @@
+package search
+/*
+	GENERATED CODE, YOUR EDITS ARE FUTILE
+
+	generated from {{.TypeName}}
+	using http://github.com/brianstarke/go-begetter/generator/searcher
+*/
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/brianstarke/go-begetter/searcher"
+)
+
+/*
+{{.TypeName}}Field is a field within the {{.TypeName}} struct
+that is able to be filtered on, sorted on, or returned.
+*/
+type {{.TypeName}}Field int
+
+const ({{$typeName := .TypeName}}
+{{range $i, $x := .SearchableFields}}{{$typeName}}_{{$x.Name}} {{if eq $i 0}}{{$typeName}}Field = iota{{end}}
+{{end}})
+
+// MarshalText implements https://golang.org/pkg/encoding/#TextMarshaler
+func (s {{.TypeName}}Field) MarshalText() ([]byte, error) {
+	var data string
+
+	switch s {
+	{{range $i, $x := .SearchableFields}}case {{$typeName}}_{{$x.Name}}:
+		data = "{{$x.JSONName}}"
+	{{end}}
+	default:
+		return nil, fmt.Errorf("Unable to marshal `%v` in to bytes", s)
+	}
+	return []byte(data), nil
+}
+
+// UnmarshalText implements https://golang.org/pkg/encoding/#TextUnmarshaler
+func (s *{{.TypeName}}Field) UnmarshalText(b []byte) error {
+	str := strings.Trim(string(b), `"`)
+
+	switch str {
+	{{range $i, $x := .SearchableFields}}case "{{$x.JSONName}}":
+		*s = {{$typeName}}_{{$x.Name}}
+	{{end}}
+	default:
+		return fmt.Errorf("Unable to marshal '%s' into type {{.TypeName}}Field", str)
+	}
+	return nil
+}
+
+// DbFieldName returns the name of the field to use in the SQL query
+func (s {{.TypeName}}Field) DbFieldName() string {
+	switch s {
+	{{range $i, $x := .SearchableFields}}case {{$typeName}}_{{$x.Name}}:
+		return "{{$x.DbName}}"
+	{{end}}
+	}
+	return ""
+}
+
+/*
+{{.TypeName}}SearchRequest defines a set of parameters for
+searching for {{.TypeName}}.  It can be serialized and passed
+between services as JSON, or used to generate a SQL statement.
+*/
+type {{.TypeName}}SearchRequest struct {
+	searcher.SearchRequestFields
+	Filters []{{.TypeName}}SearchFilter `json:"filters"`
+	OrderBy {{.TypeName}}OrderBy 		`json:"orderBy"`
+	Fields []{{.TypeName}}Field 	`json:"fields"`
+}
+
+/*
+{{.TypeName}}SearchFilter is a filter specific to {{.TypeName}}
+*/
+type {{.TypeName}}SearchFilter struct {
+	Field {{.TypeName}}Field `json:"field"`
+	Value interface{} `json:"value"`
+	Operator searcher.FilterOperator `json:"operator"`
+	Condition searcher.FilterCondition `json:"condition"`
+}
+
+/*
+{{.TypeName}}OrderBy is a sort directive that is specific to {{.TypeName}}
+*/
+type {{.TypeName}}OrderBy struct {
+	Field {{.TypeName}}Field `json:"field"`
+	Descending bool `json:"desc"`
+}
+
+// implement searcher.SearchRequest interface
+func (sr *{{.TypeName}}SearchRequest) GetTableName() string {
+	return "{{.TableName}}"
+}
+
+func (sr *{{.TypeName}}SearchRequest) GetFilters() []searcher.Filter {
+	filters := []searcher.Filter{}
+
+	for _, f := range sr.Filters {
+		filter := searcher.Filter{
+			Field: f.Field,
+			Value: f.Value,
+			Operator: f.Operator,
+			Condition: f.Condition,
+		}
+		filters = append(filters, filter)
+	}
+
+	return filters
+}
+
+func (sr *{{.TypeName}}SearchRequest) GetOrderBy() searcher.OrderBy {
+	return searcher.OrderBy{
+		Field: sr.OrderBy.Field,
+		Descending: sr.OrderBy.Descending,
+	}
+}
+
+func (sr *{{.TypeName}}SearchRequest) GetLimit() int {
+	return sr.Limit
+}
+
+func (sr *{{.TypeName}}SearchRequest) GetOffset() int {
+	return sr.Offset
+}
+
+func (sr *{{.TypeName}}SearchRequest) AddFilter(field {{.TypeName}}Field, value interface{}, operator searcher.FilterOperator, condition searcher.FilterCondition){
+	f := {{.TypeName}}SearchFilter{
+		Field: field,
+		Value: value,
+		Operator: operator,
+		Condition: condition,
+	}
+	sr.Filters = append(sr.Filters, f)
+}
+
+func (sr *{{.TypeName}}SearchRequest) SetOrderBy(field {{.TypeName}}Field, isDescending bool) {
+	sr.OrderBy = {{.TypeName}}OrderBy{
+		Field: field,
+		Descending: isDescending,
+	}
+}
+
+func (sr *{{.TypeName}}SearchRequest) GetFields() []string {
+	fields := []string{}
+
+	for _, f := range sr.Fields {
+		fields = append(fields, f.DbFieldName())
+	}
+
+	return fields
+}
