@@ -3,8 +3,8 @@ package main
 import (
 	"testing"
 
-	"github.com/brianstarke/go-begetter/generator"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/brianstarke/go-begetter/generator"
 )
 
 func TestGatherSearchableFields(t *testing.T) {
