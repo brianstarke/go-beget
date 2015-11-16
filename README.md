@@ -1,6 +1,7 @@
 # go-begetter
 
 [![](https://godoc.org/gitlab.com/brianstarke/go-begetter?status.svg)](http://godoc.org/gitlab.com/brianstarke/go-begetter)
+[![build status](https://gitlab.com/ci/projects/20838/status.png?ref=master)](https://gitlab.com/ci/projects/20838?ref=master)
 
 Generate serializable and typesafe search/create/update/delete requests to pass to services.
 
