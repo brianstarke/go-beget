@@ -1,0 +1,8 @@
+image: golang:1.5.1
+
+stages:
+  - test
+
+job1:
+  script:
+    - go test ./...
