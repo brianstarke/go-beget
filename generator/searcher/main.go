@@ -14,9 +14,9 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/brianstarke/go-beget/generator"
+	"github.com/brianstarke/go-beget/templates"
 	"github.com/mgutz/ansi"
-	"gitlab.com/brianstarke/go-begetter/generator"
-	"gitlab.com/brianstarke/go-begetter/templates"
 )
 
 var (

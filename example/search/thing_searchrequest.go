@@ -4,14 +4,14 @@ package search
 	GENERATED CODE, YOUR EDITS ARE FUTILE
 
 	generated from Thing
-	using http://gitlab.com/brianstarke/go-begetter/generator/searcher
+	using http://github.com/brianstarke/go-beget/generator/searcher
 */
 
 import (
 	"fmt"
 	"strings"
 
-	"gitlab.com/brianstarke/go-begetter/searcher"
+	"github.com/brianstarke/go-beget/searcher"
 )
 
 /*
