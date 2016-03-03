@@ -2,7 +2,7 @@
 
 [![GoDoc](https://godoc.org/github.com/brianstarke/go-beget?status.svg)](https://godoc.org/github.com/brianstarke/go-beget)
 
-Generate serializable and typesafe search/create/update/delete requests to pass to services.
+Generate serializable and typesafe search requests to pass around.
 
 This is still a work in progress.
 
@@ -87,7 +87,6 @@ This outputs
 [go-beget/searcher] SELECT SQL generated - SELECT color, height FROM things WHERE (color = $1) ORDER BY height LIMIT 10
 ```
 
-
 ### Generator templates
 
 `go-beget` uses the excellent [go-bindata](https://github.com/jteeuwen/go-bindata) tool to compile it's templates in to the executable for easier command line use.  
@@ -95,3 +94,10 @@ This outputs
 Therefore, if you make any changes to the templates, you must install `go-bindata` (`go get -u github.com/jteeuwen/go-bindata/...`).
 
 Then `./rebuild_templates.sh` from the root of this project.
+
+### TODO
+
+- Creators
+- Updaters
+- still on the fence about Deleters...
+- tagging ID fields to do easier GetByID queries
