@@ -83,7 +83,7 @@ func templatesSearch_requestTmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/search_request.tmpl", size: 3916, mode: os.FileMode(420), modTime: time.Unix(1457034925, 0)}
+	info := bindataFileInfo{name: "templates/search_request.tmpl", size: 3916, mode: os.FileMode(420), modTime: time.Unix(1457037350, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

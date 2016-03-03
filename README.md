@@ -13,3 +13,57 @@ This is still a work in progress.
 Therefore, if you make any changes to the templates, you must install `go-bindata` (`go get -u github.com/jteeuwen/go-bindata/...`).
 
 Then `./rebuild_templates.sh` from the root of this project.
+
+### Search Requests
+
+Example of using a generated search request.
+
+```go
+var sr search.ThingSearchRequest
+
+sr.Fields = []search.ThingField{
+  search.ThingColor,
+  search.ThingHeight,
+}
+
+sr.AddFilter(
+  search.ThingColor,
+  "red",
+  searcher.EQ,
+  searcher.AND)
+
+sr.SetOrderBy(search.ThingHeight, false)
+
+sr.Limit = 10
+
+jsonb, _ := json.MarshalIndent(sr, "", "  ")
+
+log.Println(string(jsonb))
+
+searcher.GenerateSelectSQL(&sr)
+```
+
+This outputs
+
+```
+2016/03/03 15:47:05 {
+  "limit": 10,
+  "filters": [
+    {
+      "field": "color",
+      "value": "red",
+      "operator": "EQ",
+      "condition": "AND"
+    }
+  ],
+  "orderBy": {
+    "field": "height",
+    "desc": false
+  },
+  "fields": [
+    "color",
+    "height"
+  ]
+}
+[go-beget/searcher] SELECT SQL generated SELECT color, height FROM things WHERE (color = $1) ORDER BY height LIMIT 10
+```

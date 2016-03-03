@@ -4,12 +4,12 @@ package searcher
 SearchRequest interface for generating SQL queries
 */
 type SearchRequest interface {
-	Fields() []string  // the SELECT (fields to return), * if nil
-	TableName() string // the FROM (table name)
-	Filters() []Filter // the WHERE clauses
-	OrderBy() OrderBy  // sorting (if any)
-	Limit() int        // limit on results (useful for paging)
-	Offset() int       // with limit, can be used for paging
+	GetFields() []string  // the SELECT (fields to return), * if nil
+	GetTableName() string // the FROM (table name)
+	GetFilters() []Filter // the WHERE clauses
+	GetOrderBy() OrderBy  // sorting (if any)
+	GetLimit() int        // limit on results (useful for paging)
+	GetOffset() int       // with limit, can be used for paging
 }
 
 type SearchRequestFields struct {

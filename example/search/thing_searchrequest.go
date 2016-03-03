@@ -73,7 +73,7 @@ func (s ThingField) DbFieldName() string {
 	case ThingColor:
 		return "color"
 	case ThingDescription:
-		return "color"
+		return "description"
 	case ThingLength:
 		return "length"
 	case ThingHeight:
