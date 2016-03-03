@@ -24,7 +24,7 @@ var (
 	tableName  = flag.String("table", "", "SQL table name if you want to generate SQLSearcher")
 
 	logPrefix = "[" +
-		ansi.Color("go-begetter", "154") +
+		ansi.Color("go-beget", "154") +
 		"/" +
 		ansi.Color("searcher", "159") + "] "
 )

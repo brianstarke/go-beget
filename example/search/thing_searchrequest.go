@@ -21,10 +21,10 @@ that is able to be filtered on, sorted on, or returned.
 type ThingField int
 
 const (
-	Thing_Color ThingField = iota
-	Thing_Description
-	Thing_Length
-	Thing_Height
+	ThingColor ThingField = iota
+	ThingDescription
+	ThingLength
+	ThingHeight
 )
 
 // MarshalText implements https://golang.org/pkg/encoding/#TextMarshaler
@@ -32,14 +32,14 @@ func (s ThingField) MarshalText() ([]byte, error) {
 	var data string
 
 	switch s {
-	case Thing_Color:
-		data = "Color"
-	case Thing_Description:
-		data = "Description"
-	case Thing_Length:
-		data = "Length"
-	case Thing_Height:
-		data = "Height"
+	case ThingColor:
+		data = "color"
+	case ThingDescription:
+		data = "description"
+	case ThingLength:
+		data = "length"
+	case ThingHeight:
+		data = "height"
 
 	default:
 		return nil, fmt.Errorf("Unable to marshal `%v` in to bytes", s)
@@ -52,14 +52,14 @@ func (s *ThingField) UnmarshalText(b []byte) error {
 	str := strings.Trim(string(b), `"`)
 
 	switch str {
-	case "Color":
-		*s = Thing_Color
-	case "Description":
-		*s = Thing_Description
-	case "Length":
-		*s = Thing_Length
-	case "Height":
-		*s = Thing_Height
+	case "color":
+		*s = ThingColor
+	case "description":
+		*s = ThingDescription
+	case "length":
+		*s = ThingLength
+	case "height":
+		*s = ThingHeight
 
 	default:
 		return fmt.Errorf("Unable to marshal '%s' into type ThingField", str)
@@ -70,14 +70,14 @@ func (s *ThingField) UnmarshalText(b []byte) error {
 // DbFieldName returns the name of the field to use in the SQL query
 func (s ThingField) DbFieldName() string {
 	switch s {
-	case Thing_Color:
-		return "Color"
-	case Thing_Description:
-		return "Description"
-	case Thing_Length:
-		return "Length"
-	case Thing_Height:
-		return "Height"
+	case ThingColor:
+		return "color"
+	case ThingDescription:
+		return "color"
+	case ThingLength:
+		return "length"
+	case ThingHeight:
+		return "height"
 
 	}
 	return ""

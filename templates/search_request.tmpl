@@ -20,7 +20,7 @@ that is able to be filtered on, sorted on, or returned.
 type {{.TypeName}}Field int
 
 const ({{$typeName := .TypeName}}
-{{range $i, $x := .SearchableFields}}{{$typeName}}_{{$x.Name}} {{if eq $i 0}}{{$typeName}}Field = iota{{end}}
+{{range $i, $x := .SearchableFields}}{{$typeName}}{{$x.Name}} {{if eq $i 0}}{{$typeName}}Field = iota{{end}}
 {{end}})
 
 // MarshalText implements https://golang.org/pkg/encoding/#TextMarshaler
@@ -28,7 +28,7 @@ func (s {{.TypeName}}Field) MarshalText() ([]byte, error) {
 	var data string
 
 	switch s {
-	{{range $i, $x := .SearchableFields}}case {{$typeName}}_{{$x.Name}}:
+	{{range $i, $x := .SearchableFields}}case {{$typeName}}{{$x.Name}}:
 		data = "{{$x.JSONName}}"
 	{{end}}
 	default:
@@ -43,7 +43,7 @@ func (s *{{.TypeName}}Field) UnmarshalText(b []byte) error {
 
 	switch str {
 	{{range $i, $x := .SearchableFields}}case "{{$x.JSONName}}":
-		*s = {{$typeName}}_{{$x.Name}}
+		*s = {{$typeName}}{{$x.Name}}
 	{{end}}
 	default:
 		return fmt.Errorf("Unable to marshal '%s' into type {{.TypeName}}Field", str)
@@ -54,7 +54,7 @@ func (s *{{.TypeName}}Field) UnmarshalText(b []byte) error {
 // DbFieldName returns the name of the field to use in the SQL query
 func (s {{.TypeName}}Field) DbFieldName() string {
 	switch s {
-	{{range $i, $x := .SearchableFields}}case {{$typeName}}_{{$x.Name}}:
+	{{range $i, $x := .SearchableFields}}case {{$typeName}}{{$x.Name}}:
 		return "{{$x.DbName}}"
 	{{end}}
 	}
