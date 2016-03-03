@@ -1,6 +1,6 @@
 # go-begetter
 
-[![](https://godoc.org/github.com/brianstarke/go-beget?status.svg)](http://godoc.org/github.com/brianstarke/go-beget)
+[![GoDoc](https://godoc.org/github.com/brianstarke/go-beget?status.svg)](https://godoc.org/github.com/brianstarke/go-beget)
 
 Generate serializable and typesafe search/create/update/delete requests to pass to services.
 
