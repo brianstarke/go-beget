@@ -65,5 +65,5 @@ This outputs
     "height"
   ]
 }
-[go-beget/searcher] SELECT SQL generated SELECT color, height FROM things WHERE (color = $1) ORDER BY height LIMIT 10
+[go-beget/searcher] SELECT SQL generated - SELECT color, height FROM things WHERE (color = $1) ORDER BY height LIMIT 10
 ```
