@@ -1,4 +1,4 @@
-# go-begetter
+# go-beget
 
 [![GoDoc](https://godoc.org/github.com/brianstarke/go-beget?status.svg)](https://godoc.org/github.com/brianstarke/go-beget)
 
