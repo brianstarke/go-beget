@@ -1,0 +1,53 @@
+package search
+/*
+	GENERATED CODE, YOUR EDITS ARE FUTILE
+
+	generated from {{.TypeName}}
+	using http://github.com/brianstarke/go-beget/generator/searcher
+*/
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/jmoiron/sqlx"
+	"github.com/brianstarke/go-beget/searcher"
+
+  types "{{.TypeImport}}"
+)
+
+// {{.TypeName}}SearchRepo is the interface
+type {{.TypeName}}SearchRepo interface {
+	Search(searchRequest {{.TypeName}}SearchRequest) ([]types.{{.TypeName}}, error)
+}
+
+// SQL{{.TypeName}}SearchRepo implements a SQL based searcher
+type SQL{{.TypeName}}SearchRepo struct {
+	db *sqlx.DB
+}
+
+// NewSQL{{.TypeName}}SearchRepo returns a configured repo for you 
+func NewSQL{{.TypeName}}SearchRepo(db *sqlx.DB) {{.TypeName}}SearchRepo {
+	return &SQL{{.TypeName}}SearchRepo{db:db}
+}
+
+// Search converts a {{.TypeName}}SearchRequest in to SQL and executes it
+func (r *SQL{{.TypeName}}SearchRepo) Search(searchRequest {{.TypeName}}SearchRequest) ([]types.{{.TypeName}}, error) {
+	results := []types.{{.TypeName}}{}
+
+	sqlStr, values, err := searcher.GenerateSelectSQL(&searchRequest)
+
+	if err != nil {
+		return nil, fmt.Errorf("Error generating SQL for {{.TypeName}}SearchRequest : %s", err.Error())
+	}
+
+	err = r.db.Select(&results, sqlStr, values.([]interface{})...)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return results, nil
+		}
+	}
+
+	return results, err
+}

@@ -1,6 +1,6 @@
 package types
 
-//go:generate searcher -struct=Thing -table=things
+//go:generate searcher -struct=Thing -table=things -repos=sql
 
 // Thing has characteristics
 type Thing struct {

@@ -22,6 +22,7 @@ import (
 var (
 	structName = flag.String("struct", "", "name of the struct to generate a searcher for")
 	tableName  = flag.String("table", "", "SQL table name if you want to generate SQLSearcher")
+	repos      = flag.String("repos", "", "comma separated list of repository implementations you'd like to create (only 'sql' available at this time)")
 
 	logPrefix = "[" +
 		ansi.Color("go-beget", "154") +
@@ -88,7 +89,10 @@ func main() {
 	}
 
 	createSearchRequest(tmplData)
-	//createSearcher(tmplData)
+
+	if len(*repos) > 0 {
+		createSearchRepo(tmplData)
+	}
 }
 
 func gatherSearchableFields(fields []generator.Field) []SearchableField {
@@ -167,22 +171,22 @@ func createSearchRequest(tmplData TemplateData) {
 		panic(err)
 	}
 
-	createSearcherDirectory()
+	createSearchDirectory()
 
-	output := fmt.Sprintf("../search/%s_searchrequest.go", strings.ToLower(tmplData.TypeName))
+	output := fmt.Sprintf("../search/%sSearchRequest.go", strings.ToLower(tmplData.TypeName))
 	err = ioutil.WriteFile(output, outputBytes, 0644)
 
 	if err != nil {
 		panic(err)
 	}
 
-	log.Printf("search request generated %s", ansi.Color(output, "155+b"))
+	log.Printf("SearchRequest generated %s", ansi.Color(output, "155+b"))
 }
 
-func createSearcher(tmplData TemplateData) {
-	t, err := templates.Asset("searcher.got")
+func createSearchRepo(tmplData TemplateData) {
+	t, err := templates.Asset("templates/search_repo.tmpl")
 
-	tmpl, err := template.New("searcher").Parse(string(t))
+	tmpl, err := template.New("search_repo").Parse(string(t))
 
 	if err != nil {
 		panic(err)
@@ -203,19 +207,19 @@ func createSearcher(tmplData TemplateData) {
 		log.Fatal(err)
 	}
 
-	output := fmt.Sprintf("../%s_searcher_gen.go", strings.ToLower(tmplData.TypeName))
+	output := fmt.Sprintf("../search/%sSearchRepo.go", strings.ToLower(tmplData.TypeName))
 	err = ioutil.WriteFile(output, outputBytes, 0644)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("searcher generated %s", output)
+	log.Printf("SearchRepo generated %s", ansi.Color(output, "155+b"))
 }
 
-func createSearcherDirectory() error {
+func createSearchDirectory() error {
 	if _, err := os.Stat("../search"); os.IsNotExist(err) {
-		log.Println("search directory does not exist, creating")
+		log.Printf("%s does not exist, I'll create it", ansi.Color("../search", "155+b"))
 
 		os.Mkdir("../search", 0777)
 	}

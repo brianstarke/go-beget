@@ -10,12 +10,12 @@ This is still a work in progress.
 
 Add `beget` tags to a struct for which you want to create `SearchRequests` for and add the `go:generate` comment.
 
-`struct` is the struct you want the `go-beget` generator to look at, `table` is the name of the database table (if you want to use optional SQL statement generation)
+`struct` is the struct you want the `go-beget` generator to look at, `table` is the name of the database table (if you want to use optional SQL statement generation).  `repos` takes a comma separated list of Repositories helpers you'd like to auto-generate.  They're called Repos because they kinda follows the [Repository pattern](http://www.giorgiosironi.com/2009/10/repository-pattern.html).  Currently, only *sql* is available - and I've only tested that on PostgreSQL.
 
 ```go
 package types
 
-//go:generate searcher -struct=Thing -table=things
+//go:generate searcher -struct=Thing -table=things -repos=db
 
 // Thing has characteristics
 type Thing struct {
@@ -87,6 +87,8 @@ This outputs
 [go-beget/searcher] SELECT SQL generated - SELECT color, height FROM things WHERE (color = $1) ORDER BY height LIMIT 10
 ```
 
+*TODO document the repository usage*
+
 ### Generator templates
 
 `go-beget` uses the excellent [go-bindata](https://github.com/jteeuwen/go-bindata) tool to compile it's templates in to the executable for easier command line use.  
@@ -101,3 +103,4 @@ Then `./rebuild_templates.sh` from the root of this project.
 - Updaters
 - still on the fence about Deleters...
 - tagging ID fields to do easier GetByID queries
+- make all generated code pass golint
