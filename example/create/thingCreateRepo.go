@@ -24,6 +24,7 @@ type SQLThingCreator struct {
 	db *sqlx.DB
 }
 
+// NewSQLThingCreator returns a SQL based ThingCreator
 func NewSQLThingCreator(db *sqlx.DB) ThingCreator {
 	return &SQLThingCreator{db: db}
 }

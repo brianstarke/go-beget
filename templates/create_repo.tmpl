@@ -23,6 +23,7 @@ type SQL{{.TypeName}}Creator struct {
 	db *sqlx.DB
 }
 
+// NewSQL{{.TypeName}}Creator returns a SQL based {{.TypeName}}Creator
 func NewSQL{{.TypeName}}Creator(db *sqlx.DB) {{.TypeName}}Creator {
 	return &SQL{{.TypeName}}Creator{db:db}
 }

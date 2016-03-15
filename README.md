@@ -12,17 +12,21 @@ Add `beget` tags to a struct for which you want to create `SearchRequests` for a
 
 `struct` is the struct you want the `go-beget` generator to look at, `table` is the name of the database table (if you want to use optional SQL statement generation).  `repos` takes a comma separated list of Repositories helpers you'd like to auto-generate.  They're called Repos because they kinda follows the [Repository pattern](http://www.giorgiosironi.com/2009/10/repository-pattern.html).  Currently, only *sql* is available - and I've only tested that on PostgreSQL.
 
+Within the `beget` tag, add **search** to the fields you'd like to be searchable, **create** to the fields you'd like to be inserted by the generated **CreateRepo**.  Generally you'd leave the `ID` field without a **create** tag if your database is assigning the IDs.
+
 ```go
 package types
 
-//go:generate searcher -struct=Thing -table=things -repos=db
+//go:generate searcher -struct=Thing -table=things -repos=sql
+//go:generate creator -struct=Thing -table=things -repos=sql
 
 // Thing has characteristics
 type Thing struct {
-	Color       string `beget:"search" json:"color" db:"color"`
-	Description string `beget:"search" json:"description" db:"description"`
-	Length      int    `beget:"search" json:"length" db:"length"`
-	Height      int    `beget:"search" json:"height" db:"height"`
+	ID          int64  `beget:"search" json:"id" db:"id"`
+	Color       string `beget:"search,create" json:"color" db:"color"`
+	Description string `beget:"search,create" json:"description" db:"description"`
+	Length      int    `beget:"search,create" json:"length" db:"length"`
+	Height      int    `beget:"search,create" json:"height" db:"height"`
 }
 ```
 
@@ -32,7 +36,12 @@ Run `go generate ./...`
 
 ```
 [go-beget/searcher] Generating searcher for Thing
-[go-beget/searcher] search request generated ../search/thing_searchrequest.go
+[go-beget/searcher] ../search does not exist, I'll create it
+[go-beget/searcher] SearchRequest generated ../search/thingSearchRequest.go
+[go-beget/searcher] SearchRepo generated ../search/thingSearchRepo.go
+[go-beget/creator] Generating creator for Thing
+[go-beget/creator] ../create does not exist, I'll create it
+[go-beget/creator] CreateRepo generated ../create/thingCreateRepo.go
 ```
 
 Example of using a generated search request.
@@ -89,6 +98,8 @@ This outputs
 
 *TODO document the repository usage*
 
+*TODO document the creator usage*
+
 ### Generator templates
 
 `go-beget` uses the excellent [go-bindata](https://github.com/jteeuwen/go-bindata) tool to compile it's templates in to the executable for easier command line use.  
@@ -99,7 +110,6 @@ Then `./rebuild_templates.sh` from the root of this project.
 
 ### TODO
 
-- Creators
 - Updaters
 - still on the fence about Deleters...
 - tagging ID fields to do easier GetByID queries
