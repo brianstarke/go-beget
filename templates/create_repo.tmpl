@@ -1,0 +1,40 @@
+package create
+/*
+	GENERATED CODE, YOUR EDITS ARE FUTILE
+
+	generated from {{.TypeName}}
+	using http://github.com/brianstarke/go-beget/generator/creator
+*/
+
+import (
+	"github.com/jmoiron/sqlx"
+	"github.com/brianstarke/go-beget/creator"
+
+	types "{{.TypeImport}}"
+)
+
+// {{.TypeName}}Creator defines the interface for this creator
+type {{.TypeName}}Creator interface {
+	Create(c types.{{.TypeName}}) (int64, error)
+}
+
+// SQL{{.TypeName}}Creator implements a SQL creator
+type SQL{{.TypeName}}Creator struct {
+	db *sqlx.DB
+}
+
+func NewSQL{{.TypeName}}Creator(db *sqlx.DB) {{.TypeName}}Creator {
+	return &SQL{{.TypeName}}Creator{db:db}
+}
+
+{{$numFields := len .CreatableFields}}
+
+// Create inserts a {{.TypeName}} record in to the database
+func (r *SQL{{.TypeName}}Creator) Create(c types.{{.TypeName}}) (int64, error) {
+	columns := []string{
+		{{range $i, $x := .CreatableFields}}"{{$x.DbName}}",
+		{{end}}
+	}
+
+	return creator.Insert(r.db.DB, "{{.TableName}}", columns, {{range $i, $x := .CreatableFields}}c.{{$x.Name}}{{if lt $i $numFields}},{{end}}{{end}})
+}

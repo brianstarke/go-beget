@@ -21,7 +21,8 @@ that is able to be filtered on, sorted on, or returned.
 type ThingField int
 
 const (
-	ThingColor ThingField = iota
+	ThingID ThingField = iota
+	ThingColor
 	ThingDescription
 	ThingLength
 	ThingHeight
@@ -32,6 +33,8 @@ func (s ThingField) MarshalText() ([]byte, error) {
 	var data string
 
 	switch s {
+	case ThingID:
+		data = "id"
 	case ThingColor:
 		data = "color"
 	case ThingDescription:
@@ -52,6 +55,8 @@ func (s *ThingField) UnmarshalText(b []byte) error {
 	str := strings.Trim(string(b), `"`)
 
 	switch str {
+	case "id":
+		*s = ThingID
 	case "color":
 		*s = ThingColor
 	case "description":
@@ -70,6 +75,8 @@ func (s *ThingField) UnmarshalText(b []byte) error {
 // DbFieldName returns the name of the field to use in the SQL query
 func (s ThingField) DbFieldName() string {
 	switch s {
+	case ThingID:
+		return "id"
 	case ThingColor:
 		return "color"
 	case ThingDescription:
