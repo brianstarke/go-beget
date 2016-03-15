@@ -1,6 +1,7 @@
 # go-beget
 
 [![GoDoc](https://godoc.org/github.com/brianstarke/go-beget?status.svg)](https://godoc.org/github.com/brianstarke/go-beget)
+[![Build Status](https://travis-ci.org/brianstarke/go-beget.svg?branch=master)](https://travis-ci.org/brianstarke/go-beget)
 
 Generate serializable and typesafe search requests to pass around.
 
