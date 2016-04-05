@@ -119,11 +119,14 @@ type ThingOrderBy struct {
 	Descending bool       `json:"desc"`
 }
 
-// implement searcher.SearchRequest interface
+// Implement searcher.SearchRequest interface
+
+// GetTableName returns the database table name
 func (sr *ThingSearchRequest) GetTableName() string {
 	return "things"
 }
 
+// GetFilters returns the SQL WHERE clauses
 func (sr *ThingSearchRequest) GetFilters() []searcher.Filter {
 	filters := []searcher.Filter{}
 
@@ -140,6 +143,7 @@ func (sr *ThingSearchRequest) GetFilters() []searcher.Filter {
 	return filters
 }
 
+// GetOrderBy returns the SQL ORDER BY clauses
 func (sr *ThingSearchRequest) GetOrderBy() searcher.OrderBy {
 	return searcher.OrderBy{
 		Field:      sr.OrderBy.Field,
@@ -147,14 +151,17 @@ func (sr *ThingSearchRequest) GetOrderBy() searcher.OrderBy {
 	}
 }
 
+// GetLimit returns the SQL LIMIT clause
 func (sr *ThingSearchRequest) GetLimit() int {
 	return sr.Limit
 }
 
+// GetOffset returns the SQL OFFSET clause
 func (sr *ThingSearchRequest) GetOffset() int {
 	return sr.Offset
 }
 
+// AddFilter adds a WHERE clause
 func (sr *ThingSearchRequest) AddFilter(field ThingField, value interface{}, operator searcher.FilterOperator, condition searcher.FilterCondition) {
 	f := ThingSearchFilter{
 		Field:     field,
@@ -165,6 +172,7 @@ func (sr *ThingSearchRequest) AddFilter(field ThingField, value interface{}, ope
 	sr.Filters = append(sr.Filters, f)
 }
 
+// SetOrderBy sets the ORDER BY clause
 func (sr *ThingSearchRequest) SetOrderBy(field ThingField, isDescending bool) {
 	sr.OrderBy = ThingOrderBy{
 		Field:      field,
@@ -172,6 +180,7 @@ func (sr *ThingSearchRequest) SetOrderBy(field ThingField, isDescending bool) {
 	}
 }
 
+// GetFields returns the SQL SELECT fields
 func (sr *ThingSearchRequest) GetFields() []string {
 	fields := []string{}
 

@@ -91,11 +91,14 @@ type {{.TypeName}}OrderBy struct {
 	Descending bool `json:"desc"`
 }
 
-// implement searcher.SearchRequest interface
+// Implement searcher.SearchRequest interface
+
+// GetTableName returns the database table name
 func (sr *{{.TypeName}}SearchRequest) GetTableName() string {
 	return "{{.TableName}}"
 }
 
+// GetFilters returns the SQL WHERE clauses
 func (sr *{{.TypeName}}SearchRequest) GetFilters() []searcher.Filter {
 	filters := []searcher.Filter{}
 
@@ -112,6 +115,7 @@ func (sr *{{.TypeName}}SearchRequest) GetFilters() []searcher.Filter {
 	return filters
 }
 
+// GetOrderBy returns the SQL ORDER BY clauses
 func (sr *{{.TypeName}}SearchRequest) GetOrderBy() searcher.OrderBy {
 	return searcher.OrderBy{
 		Field: sr.OrderBy.Field,
@@ -119,14 +123,17 @@ func (sr *{{.TypeName}}SearchRequest) GetOrderBy() searcher.OrderBy {
 	}
 }
 
+// GetLimit returns the SQL LIMIT clause
 func (sr *{{.TypeName}}SearchRequest) GetLimit() int {
 	return sr.Limit
 }
 
+// GetOffset returns the SQL OFFSET clause
 func (sr *{{.TypeName}}SearchRequest) GetOffset() int {
 	return sr.Offset
 }
 
+// AddFilter adds a WHERE clause
 func (sr *{{.TypeName}}SearchRequest) AddFilter(field {{.TypeName}}Field, value interface{}, operator searcher.FilterOperator, condition searcher.FilterCondition){
 	f := {{.TypeName}}SearchFilter{
 		Field: field,
@@ -137,6 +144,7 @@ func (sr *{{.TypeName}}SearchRequest) AddFilter(field {{.TypeName}}Field, value 
 	sr.Filters = append(sr.Filters, f)
 }
 
+// SetOrderBy sets the ORDER BY clause
 func (sr *{{.TypeName}}SearchRequest) SetOrderBy(field {{.TypeName}}Field, isDescending bool) {
 	sr.OrderBy = {{.TypeName}}OrderBy{
 		Field: field,
@@ -144,6 +152,7 @@ func (sr *{{.TypeName}}SearchRequest) SetOrderBy(field {{.TypeName}}Field, isDes
 	}
 }
 
+// GetFields returns the SQL SELECT fields
 func (sr *{{.TypeName}}SearchRequest) GetFields() []string {
 	fields := []string{}
 
