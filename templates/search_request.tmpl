@@ -13,12 +13,12 @@ import (
 	"github.com/brianstarke/go-beget/searcher"
 )
 
-/*
-{{.TypeName}}Field is a field within the {{.TypeName}} struct
-that is able to be filtered on, sorted on, or returned.
-*/
+
+// {{.TypeName}}Field is a field within the {{.TypeName}} struct
+//that is able to be filtered on, sorted on, or returned.
 type {{.TypeName}}Field int
 
+// Enum'd for helpfulness
 const ({{$typeName := .TypeName}}
 {{range $i, $x := .SearchableFields}}{{$typeName}}{{$x.Name}} {{if eq $i 0}}{{$typeName}}Field = iota{{end}}
 {{end}})
