@@ -15,7 +15,7 @@ import (
 )
 
 // ThingField is a field within the Thing struct
-//that is able to be filtered on, sorted on, or returned.
+// that is able to be filtered on, sorted on, or returned.
 type ThingField int
 
 // Enum'd for helpfulness

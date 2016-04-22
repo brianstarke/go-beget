@@ -1,0 +1,200 @@
+package update
+/*
+	GENERATED CODE, YOUR EDITS ARE FUTILE
+
+	generated from {{.TypeName}}
+	using http://github.com/brianstarke/go-beget/generator/updater
+*/
+
+import (
+	"fmt"
+	"strings"
+	"encoding/json"
+)
+
+// {{.TypeName}}Field is a field within the {{.TypeName}} struct
+// that is able to be updated
+type {{.TypeName}}Field int
+
+// Enum'd for helpfulness
+const ({{$typeName := .TypeName}}
+{{range $i, $x := .UpdateableFields}}{{$typeName}}{{$x.Name}} {{if eq $i 0}}{{$typeName}}Field = iota{{end}}
+{{end}})
+
+// MarshalText implements https://golang.org/pkg/encoding/#TextMarshaler
+func (s {{.TypeName}}Field) MarshalText() ([]byte, error) {
+	var data string
+
+	switch s {
+	{{range $i, $x := .UpdateableFields}}case {{$typeName}}{{$x.Name}}:
+		data = "{{$x.JSONName}}"
+	{{end}}
+	default:
+		return nil, fmt.Errorf("Unable to marshal `%v` in to bytes", s)
+	}
+	return []byte(data), nil
+}
+
+// UnmarshalText implements https://golang.org/pkg/encoding/#TextUnmarshaler
+func (s *{{.TypeName}}Field) UnmarshalText(b []byte) error {
+	str := strings.Trim(string(b), `"`)
+
+	switch str {
+	{{range $i, $x := .UpdateableFields}}case "{{$x.JSONName}}":
+		*s = {{$typeName}}{{$x.Name}}
+	{{end}}
+	default:
+		return fmt.Errorf("Unable to marshal '%s' into type {{.TypeName}}Field", str)
+	}
+	return nil
+}
+
+// DbFieldName returns the name of the field to use in the SQL query
+func (s {{.TypeName}}Field) DbFieldName() string {
+	switch s {
+	{{range $i, $x := .UpdateableFields}}case {{$typeName}}{{$x.Name}}:
+		return "{{$x.DbName}}"
+	{{end}}
+	}
+	return ""
+}
+
+// {{.TypeName}}UpdateRequest defines a set of parameters for
+// updating {{.TypeName}}.  It can be serialized and passed
+// between services as JSON, or used to generate a SQL statement.
+type {{.TypeName}}UpdateRequest struct {
+	ID int64 `json:"id"`
+	Updates map[{{.TypeName}}Field]interface{} `json:"updates"`
+}
+
+// MarshalText implements https://golang.org/pkg/encoding/#TextMarshaler
+func (ur {{.TypeName}}UpdateRequest) MarshalText() ([]byte, error) {
+	stringified := make(map[string]interface{})
+
+	for key, value := range ur.Updates {
+		s, err := key.MarshalText()
+
+		if err != nil {
+			return nil, err
+		}
+
+		stringified[string(s)] = value
+	}
+
+	result := map[string]interface{}{
+		"updates": stringified,
+		"id":      ur.ID,
+	}
+
+	return json.Marshal(result)
+}
+
+// MarshalBinary implements https://golang.org/pkg/encoding/#BinaryMarshaler
+func (ur {{.TypeName}}UpdateRequest) MarshalBinary() ([]byte, error) {
+	stringified := make(map[string]interface{})
+
+	for key, value := range ur.Updates {
+		s, err := key.MarshalText()
+
+		if err != nil {
+			return nil, err
+		}
+
+		stringified[string(s)] = value
+	}
+
+	result := map[string]interface{}{
+		"updates": stringified,
+		"id":      ur.ID,
+	}
+
+	return json.Marshal(result)
+}
+
+// UnmarshalText implements https://golang.org/pkg/encoding/#TextUnmarshaler
+func (ur *{{.TypeName}}UpdateRequest) UnmarshalText(b []byte) error {
+	var i map[string]interface{}
+
+	err := json.Unmarshal(b, &i)
+
+	if err != nil {
+		return err
+	}
+
+	ur.ID = i["id"].(int64)
+
+	var j = make(map[{{.TypeName}}Field]interface{})
+
+	for key, value := range i["updates"].(map[string]interface{}) {
+		var p {{.TypeName}}Field
+		err = p.UnmarshalText([]byte(key))
+
+		if err != nil {
+			return err
+		}
+		j[p] = value
+	}
+
+	ur.Updates = j
+
+	return nil
+}
+
+// UnmarshalBinary implements https://golang.org/pkg/encoding/#BinaryUnmarshaler
+func (ur *{{.TypeName}}UpdateRequest) UnmarshalBinary(b []byte) error {
+	var i map[string]interface{}
+
+	err := json.Unmarshal(b, &i)
+
+	if err != nil {
+		return err
+	}
+
+	ur.ID = i["id"].(int64)
+
+	var j = make(map[{{.TypeName}}Field]interface{})
+
+	for key, value := range i["updates"].(map[string]interface{}) {
+		var p {{.TypeName}}Field
+		err = p.UnmarshalText([]byte(key))
+
+		if err != nil {
+			return err
+		}
+		j[p] = value
+	}
+
+	ur.Updates = j
+
+	return nil
+}
+
+// GetID implements updater.UpdateRequest interface
+func (ur *{{.TypeName}}UpdateRequest) GetID() int64 {
+	return ur.ID
+}
+
+// GetTableName implements updater.UpdateRequest interface
+func (ur *{{.TypeName}}UpdateRequest) GetTableName() string {
+	return "{{.TableName}}"
+}
+
+// GetUpdates implements updater.UpdateRequest interface
+func (ur *{{.TypeName}}UpdateRequest) GetUpdates() map[string]interface{} {
+	updates := make(map[string]interface{})
+
+	for field, value := range ur.Updates {
+		updates[field.DbFieldName()] = value
+	}
+
+	return updates
+}
+
+// AddUpdate implements updater.UpdateRequest interface
+func (ur *{{.TypeName}}UpdateRequest) AddUpdate(field {{.TypeName}}Field, value interface{}) {
+	if ur.Updates == nil {
+		ur.Updates = make(map[{{.TypeName}}Field]interface{})
+	}
+
+	ur.Updates[field] = value
+}

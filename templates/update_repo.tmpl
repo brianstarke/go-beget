@@ -1,0 +1,60 @@
+package update
+/*
+	GENERATED CODE, YOUR EDITS ARE FUTILE
+
+	generated from {{.TypeName}}
+	using http://github.com/brianstarke/go-beget/generator/updater
+*/
+
+import (
+	"fmt"
+
+	"github.com/jmoiron/sqlx"
+  "github.com/brianstarke/go-beget/updater"
+)
+
+// {{.TypeName}}Updater is the interface
+type {{.TypeName}}Updater interface {
+	Update(updateRequest {{.TypeName}}UpdateRequest) error
+	DeleteByID(ID int64) error
+}
+
+// SQL{{.TypeName}}Updater implements a SQL based updater
+type SQL{{.TypeName}}Updater struct {
+	db *sqlx.DB
+}
+
+// NewSQL{{.TypeName}}Updater returns a configured updater
+func NewSQL{{.TypeName}}Updater(db *sqlx.DB) {{.TypeName}}Updater {
+	return &SQL{{.TypeName}}Updater{db:db}
+}
+
+// Update converts a {{.TypeName}}UpdateRequest in to SQL and executes it
+func (r *SQL{{.TypeName}}Updater) Update(updateRequest {{.TypeName}}UpdateRequest) error {
+	sqlStr, values, err := updater.GetUpdateSQL(&updateRequest)
+
+	if err != nil {
+		return fmt.Errorf("Error generating SQL for {{.TypeName}}UpdateRequest : %s", err.Error())
+	}
+
+	_, err = r.db.Exec(sqlStr, values.([]interface{})...)
+
+	return err
+}
+
+// DeleteByID generates a Delete update and executes it
+func (r *SQL{{.TypeName}}Updater) DeleteByID(ID int64) error {
+	ur := {{.TypeName}}UpdateRequest{
+		ID: ID,
+	}
+
+	sqlStr, values, err := updater.GetDeleteSQL(&ur)
+
+	if err != nil {
+		return fmt.Errorf("Error generating SQL for {{.TypeName}} DeleteByID : %s", err.Error())
+	}
+
+	_, err = r.db.Exec(sqlStr, values.([]interface{})...)
+
+	return err
+}
