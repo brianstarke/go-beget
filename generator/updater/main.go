@@ -27,7 +27,7 @@ var (
 	logPrefix = "[" +
 		ansi.Color("go-beget", "154") +
 		"/" +
-		ansi.Color("updater", "159") + "] "
+		ansi.Color("updater", "111") + "] "
 )
 
 /*
@@ -144,13 +144,13 @@ func gatherUpdateableFields(fields []generator.Field) []UpdateableField {
 }
 
 func createUpdateRequest(tmplData TemplateData) {
-	t, err := templates.Asset("templates/update_request.tmpl")
+	t, err := templates.Asset("templates/updateRequest.tmpl")
 
 	if err != nil {
 		panic(err)
 	}
 
-	updateRequestTmpl, err := template.New("update_request").Parse(string(t))
+	updateRequestTmpl, err := template.New("updateRequest").Parse(string(t))
 
 	if err != nil {
 		panic(err)
@@ -184,9 +184,9 @@ func createUpdateRequest(tmplData TemplateData) {
 }
 
 func createUpdateRepo(tmplData TemplateData) {
-	t, err := templates.Asset("templates/update_repo.tmpl")
+	t, err := templates.Asset("templates/updater.tmpl")
 
-	tmpl, err := template.New("update_repo").Parse(string(t))
+	tmpl, err := template.New("updater").Parse(string(t))
 
 	if err != nil {
 		panic(err)
@@ -207,14 +207,14 @@ func createUpdateRepo(tmplData TemplateData) {
 		log.Fatal(err)
 	}
 
-	output := fmt.Sprintf("../update/%sUpdateRepo.go", strings.ToLower(tmplData.TypeName))
+	output := fmt.Sprintf("../update/%sUpdater.go", strings.ToLower(tmplData.TypeName))
 	err = ioutil.WriteFile(output, outputBytes, 0644)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("UpdateRepo generated %s", ansi.Color(output, "155+b"))
+	log.Printf("Updater generated %s", ansi.Color(output, "155+b"))
 }
 
 func createUpdateDirectory() error {

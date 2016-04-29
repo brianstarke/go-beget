@@ -144,13 +144,13 @@ func gatherSearchableFields(fields []generator.Field) []SearchableField {
 }
 
 func createSearchRequest(tmplData TemplateData) {
-	t, err := templates.Asset("templates/search_request.tmpl")
+	t, err := templates.Asset("templates/searchRequest.tmpl")
 
 	if err != nil {
 		panic(err)
 	}
 
-	searchRequestTmpl, err := template.New("search_request").Parse(string(t))
+	searchRequestTmpl, err := template.New("searchRequest").Parse(string(t))
 
 	if err != nil {
 		panic(err)
@@ -184,9 +184,9 @@ func createSearchRequest(tmplData TemplateData) {
 }
 
 func createSearchRepo(tmplData TemplateData) {
-	t, err := templates.Asset("templates/search_repo.tmpl")
+	t, err := templates.Asset("templates/searcher.tmpl")
 
-	tmpl, err := template.New("search_repo").Parse(string(t))
+	tmpl, err := template.New("searcher").Parse(string(t))
 
 	if err != nil {
 		panic(err)
@@ -207,14 +207,14 @@ func createSearchRepo(tmplData TemplateData) {
 		log.Fatal(err)
 	}
 
-	output := fmt.Sprintf("../search/%sSearchRepo.go", strings.ToLower(tmplData.TypeName))
+	output := fmt.Sprintf("../search/%sSearcher.go", strings.ToLower(tmplData.TypeName))
 	err = ioutil.WriteFile(output, outputBytes, 0644)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("SearchRepo generated %s", ansi.Color(output, "155+b"))
+	log.Printf("Searcher generated %s", ansi.Color(output, "155+b"))
 }
 
 func createSearchDirectory() error {

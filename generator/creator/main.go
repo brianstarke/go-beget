@@ -27,7 +27,7 @@ var (
 	logPrefix = "[" +
 		ansi.Color("go-beget", "154") +
 		"/" +
-		ansi.Color("creator", "159") + "] "
+		ansi.Color("creator", "168") + "] "
 )
 
 /*
@@ -142,9 +142,9 @@ func gatherCreatableFields(fields []generator.Field) []CreatableField {
 }
 
 func createCreateRepo(tmplData TemplateData) {
-	t, err := templates.Asset("templates/create_repo.tmpl")
+	t, err := templates.Asset("templates/creator.tmpl")
 
-	tmpl, err := template.New("create_repo").Parse(string(t))
+	tmpl, err := template.New("creator").Parse(string(t))
 
 	if err != nil {
 		panic(err)
@@ -167,14 +167,14 @@ func createCreateRepo(tmplData TemplateData) {
 
 	createCreateDirectory()
 
-	output := fmt.Sprintf("../create/%sCreateRepo.go", strings.ToLower(tmplData.TypeName))
+	output := fmt.Sprintf("../create/%sCreator.go", strings.ToLower(tmplData.TypeName))
 	err = ioutil.WriteFile(output, outputBytes, 0644)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("CreateRepo generated %s", ansi.Color(output, "155+b"))
+	log.Printf("Creator generated %s", ansi.Color(output, "155+b"))
 }
 
 func createCreateDirectory() error {
