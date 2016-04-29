@@ -101,7 +101,35 @@ This outputs
 [go-beget/searcher] SELECT SQL generated - SELECT color, height FROM things WHERE (color = $1) ORDER BY height LIMIT 10
 ```
 
-*TODO document the repository usage*
+### Using Searchers
+
+You can use a generated **searcher** to execute **SearchRequests** or pull single results by a particular field.  The latter is useful for doing a get by ID sort of thing.
+
+```go
+// construct the search request
+var sr search.ThingSearchRequest
+
+sr.AddFilter(
+  search.ThingColor,
+  "red",
+  searcher.EQ,
+  searcher.AND)
+
+sr.SetOrderBy(search.ThingHeight, false)
+sr.Limit = 10
+sr.Offset = 2
+
+// run the search request (where db is a working *sqlx.DB instance)
+things, err := search.NewSQLThingSearcher(db).Search(sr)
+// do things with results, check error etc...
+```
+
+Or to simply just get a single result by a particular field...
+
+```go
+thing, err := search.NewSQLThingSearcher(db).GetByField(search.ThingID, 16)
+// do things with result, check error etc...
+```
 
 *TODO document the creator usage*
 
@@ -117,5 +145,7 @@ Then `./rebuild_templates.sh` from the root of this project.
 
 ### TODO
 
-- tagging ID fields to do easier GetByID queries
+- add a Get method to return single result
+- add an AddField method
+- tagging ID fields to do easier GetByID queries?
 - make all generated code pass golint

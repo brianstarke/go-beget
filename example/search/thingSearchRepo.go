@@ -17,23 +17,23 @@ import (
 	types "github.com/brianstarke/go-beget/example/types"
 )
 
-// ThingSearchRepo is the interface
-type ThingSearchRepo interface {
+// ThingSearcher is the interface
+type ThingSearcher interface {
 	Search(searchRequest ThingSearchRequest) ([]types.Thing, error)
 }
 
-// SQLThingSearchRepo implements a SQL based searcher
-type SQLThingSearchRepo struct {
+// SQLThingSearcher implements a SQL based searcher
+type SQLThingSearcher struct {
 	db *sqlx.DB
 }
 
-// NewSQLThingSearchRepo returns a configured repo for you
-func NewSQLThingSearchRepo(db *sqlx.DB) ThingSearchRepo {
-	return &SQLThingSearchRepo{db: db}
+// NewSQLThingSearcher returns a configured repo for you
+func NewSQLThingSearcher(db *sqlx.DB) ThingSearcher {
+	return &SQLThingSearcher{db: db}
 }
 
 // Search converts a ThingSearchRequest in to SQL and executes it
-func (r *SQLThingSearchRepo) Search(searchRequest ThingSearchRequest) ([]types.Thing, error) {
+func (r *SQLThingSearcher) Search(searchRequest ThingSearchRequest) ([]types.Thing, error) {
 	results := []types.Thing{}
 
 	sqlStr, values, err := searcher.GenerateSelectSQL(&searchRequest)
@@ -51,4 +51,32 @@ func (r *SQLThingSearchRepo) Search(searchRequest ThingSearchRequest) ([]types.T
 	}
 
 	return results, err
+}
+
+// GetByField is a convenience method to return just one result by matching on a single field
+func (r *SQLThingSearcher) GetByField(field ThingField, value interface{}) (*types.Thing, error) {
+	var searchRequest ThingSearchRequest
+
+	searchRequest.AddFilter(
+		field,
+		value,
+		searcher.EQ,
+		searcher.AND,
+	)
+	searchRequest.Limit = 1
+
+	sqlStr, values, err := searcher.GenerateSelectSQL(&searchRequest)
+
+	if err != nil {
+		return nil, fmt.Errorf("Error generating GetBy %s SQL for Thing : %s", field, err.Error())
+	}
+
+	var result types.Thing
+	err = r.db.Get(&result, sqlStr, values.([]interface{})...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, err
 }
