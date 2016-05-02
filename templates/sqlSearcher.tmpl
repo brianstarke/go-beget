@@ -19,6 +19,7 @@ import (
 // {{.TypeName}}Searcher is the interface
 type {{.TypeName}}Searcher interface {
 	Search(searchRequest {{.TypeName}}SearchRequest) ([]types.{{.TypeName}}, error)
+	GetByField(field {{.TypeName}}Field, value interface{}) (*types.{{.TypeName}}, error)
 }
 
 // SQL{{.TypeName}}Searcher implements a SQL based searcher
@@ -67,7 +68,7 @@ func (r *SQL{{.TypeName}}Searcher) GetByField(field {{.TypeName}}Field, value in
 	sqlStr, values, err := searcher.GenerateSelectSQL(&searchRequest)
 
 	if err != nil {
-		return nil, fmt.Errorf("Error generating GetBy %s SQL for {{.TypeName}} : %s", field, err.Error())
+		return nil, fmt.Errorf("Error generating GetByField SQL for {{.TypeName}} [db field:%s]: %s", field.DbFieldName(), err.Error())
 	}
 
 	var result types.{{.TypeName}}

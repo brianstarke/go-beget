@@ -11,14 +11,17 @@ This is still a work in progress.
 
 Add `beget` tags to a struct for which you want to create `SearchRequests` for and add the `go:generate` comment.
 
-`struct` is the struct you want the `go-beget` generator to look at, `table` is the name of the database table (if you want to use optional SQL statement generation).  `repos` takes a comma separated list of Repositories helpers you'd like to auto-generate.  They're called Repos because they kinda follows the [Repository pattern](http://www.giorgiosironi.com/2009/10/repository-pattern.html).  Currently, only *sql* is available - and I've only tested that on PostgreSQL.
+`struct` is the struct you want the `go-beget` generator to look at, `table` is the name of the database table (if you want to use optional SQL statement generation).  `impls` takes a comma separated list of helpers you'd like to auto-generate.  
+
+- **sql** will generate a **SQLSearcher** (currently, **sql** implementation has only been tested on PostgreSQL).
+- **gin** will generate [gin gonic](https://github.com/gin-gonic) handlers that use the **SQLSearcher**.
 
 Within the `beget` tag, add **search** to the fields you'd like to be searchable, **create** to the fields you'd like to be inserted by the generated **Creator** and **update** to the fields you want to allow to updated via an **Updater**.  Generally you'd leave the `ID` field without a **create** tag if your database is assigning the IDs.
 
 ```go
 package types
 
-//go:generate searcher -struct=Thing -table=things -repos=sql
+//go:generate searcher -struct=Thing -table=things -impls=sql,gin
 //go:generate creator -struct=Thing -table=things -repos=sql
 //go:generate updater -struct=Thing -table=things -repos=sql
 
@@ -40,7 +43,7 @@ Run `go generate ./...`
 [go-beget/searcher] Generating searcher for Thing
 [go-beget/searcher] ../search does not exist, I'll create it
 [go-beget/searcher] SearchRequest generated ../search/thingSearchRequest.go
-[go-beget/searcher] SearchRepo generated ../search/thingSearchRepo.go
+[go-beget/searcher] SQLSearchRepo generated ../search/thingSearchRepo.go
 [go-beget/creator] Generating creator for Thing
 [go-beget/creator] ../create does not exist, I'll create it
 [go-beget/creator] CreateRepo generated ../create/thingCreateRepo.go
@@ -101,7 +104,7 @@ This outputs
 [go-beget/searcher] SELECT SQL generated - SELECT color, height FROM things WHERE (color = $1) ORDER BY height LIMIT 10
 ```
 
-### Using Searchers
+### Using SQLSearchers
 
 You can use a generated **searcher** to execute **SearchRequests** or pull single results by a particular field.  The latter is useful for doing a get by ID sort of thing.
 
@@ -130,6 +133,25 @@ Or to simply just get a single result by a particular field...
 thing, err := search.NewSQLThingSearcher(db).GetByField(search.ThingID, 16)
 // do things with result, check error etc...
 ```
+
+### Using GinSearchers
+
+If you also generated the [gin gonic](https://github.com/gin-gonic) handlers, you can wire them up in your routes like so:
+
+```go
+router.POST("/thing", search.NewThingSearchHandler(db))
+router.GET("/thing/:id", search.NewThingGetByIDHandler(db))
+```
+
+The generated routes expect JSON and return JSON.  On error, they return status code **500** and the error in a JSON struct like this:
+
+```javascript
+{
+	"error": "Your error here"
+}
+```
+
+On success they return **200** and the result as JSON.
 
 *TODO document the creator usage*
 

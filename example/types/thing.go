@@ -1,6 +1,6 @@
 package types
 
-//go:generate searcher -struct=Thing -table=things -repos=sql
+//go:generate searcher -struct=Thing -table=things -impls=sql,gin
 //go:generate creator -struct=Thing -table=things -repos=sql
 //go:generate updater -struct=Thing -table=things -repos=sql
 

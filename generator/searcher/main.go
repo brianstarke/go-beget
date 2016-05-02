@@ -22,7 +22,7 @@ import (
 var (
 	structName = flag.String("struct", "", "name of the struct to generate a searcher for")
 	tableName  = flag.String("table", "", "SQL table name if you want to generate SQLSearcher")
-	repos      = flag.String("repos", "", "comma separated list of repository implementations you'd like to create (only 'sql' available at this time)")
+	impls      = flag.String("impls", "", "comma separated list of implementations you'd like to generate (only 'sql' and 'gin' available at this time)")
 
 	logPrefix = "[" +
 		ansi.Color("go-beget", "154") +
@@ -90,8 +90,16 @@ func main() {
 
 	createSearchRequest(tmplData)
 
-	if len(*repos) > 0 {
-		createSearchRepo(tmplData)
+	if len(*impls) > 0 {
+		// contains works for now, since there aren't any conflicts yet
+
+		if strings.Contains(*impls, "sql") {
+			createSQLSearcher(tmplData)
+		}
+
+		if strings.Contains(*impls, "gin") {
+			createGinHandlers(tmplData)
+		}
 	}
 }
 
@@ -183,10 +191,10 @@ func createSearchRequest(tmplData TemplateData) {
 	log.Printf("SearchRequest generated %s", ansi.Color(output, "155+b"))
 }
 
-func createSearchRepo(tmplData TemplateData) {
-	t, err := templates.Asset("templates/searcher.tmpl")
+func createSQLSearcher(tmplData TemplateData) {
+	t, err := templates.Asset("templates/sqlSearcher.tmpl")
 
-	tmpl, err := template.New("searcher").Parse(string(t))
+	tmpl, err := template.New("sqlSearcher").Parse(string(t))
 
 	if err != nil {
 		panic(err)
@@ -207,14 +215,48 @@ func createSearchRepo(tmplData TemplateData) {
 		log.Fatal(err)
 	}
 
-	output := fmt.Sprintf("../search/%sSearcher.go", strings.ToLower(tmplData.TypeName))
+	output := fmt.Sprintf("../search/%sSQLSearcher.go", strings.ToLower(tmplData.TypeName))
 	err = ioutil.WriteFile(output, outputBytes, 0644)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("Searcher generated %s", ansi.Color(output, "155+b"))
+	log.Printf("SQLSearcher generated %s", ansi.Color(output, "155+b"))
+}
+
+func createGinHandlers(tmplData TemplateData) {
+	t, err := templates.Asset("templates/ginSearcher.tmpl")
+
+	tmpl, err := template.New("ginSearcher").Parse(string(t))
+
+	if err != nil {
+		panic(err)
+	}
+
+	b := []byte{}
+	buf := bytes.NewBuffer(b)
+
+	err = tmpl.Execute(buf, tmplData)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	outputBytes, err := format.Source(buf.Bytes())
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	output := fmt.Sprintf("../search/%sGinSearcher.go", strings.ToLower(tmplData.TypeName))
+	err = ioutil.WriteFile(output, outputBytes, 0644)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("GinSearcher generated %s", ansi.Color(output, "155+b"))
 }
 
 func createSearchDirectory() error {

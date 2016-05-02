@@ -20,6 +20,7 @@ import (
 // ThingSearcher is the interface
 type ThingSearcher interface {
 	Search(searchRequest ThingSearchRequest) ([]types.Thing, error)
+	GetByField(field ThingField, value interface{}) (*types.Thing, error)
 }
 
 // SQLThingSearcher implements a SQL based searcher
@@ -68,7 +69,7 @@ func (r *SQLThingSearcher) GetByField(field ThingField, value interface{}) (*typ
 	sqlStr, values, err := searcher.GenerateSelectSQL(&searchRequest)
 
 	if err != nil {
-		return nil, fmt.Errorf("Error generating GetBy %s SQL for Thing : %s", field, err.Error())
+		return nil, fmt.Errorf("Error generating GetByField SQL for Thing [db field:%s]: %s", field.DbFieldName(), err.Error())
 	}
 
 	var result types.Thing
