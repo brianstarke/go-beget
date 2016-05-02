@@ -48,6 +48,7 @@ func New{{.TypeName}}GetByIDHandler(db *sqlx.DB) gin.HandlerFunc {
 
     if len(id) == 0 {
       c.JSON(500, gin.H{"error": "No ID provided"})
+      return
     }
 
     result, err := NewSQL{{.TypeName}}Searcher(db).GetByField({{.TypeName}}ID, id)
