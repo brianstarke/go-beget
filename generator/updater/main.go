@@ -22,7 +22,7 @@ import (
 var (
 	structName = flag.String("struct", "", "name of the struct to generate an updater for")
 	tableName  = flag.String("table", "", "SQL table name if you want to generate SQLUpdater")
-	repos      = flag.String("repos", "", "comma separated list of repository implementations you'd like to create (only 'sql' available at this time)")
+	impls      = flag.String("impls", "", "comma separated list of implementations you'd like to generate (only 'sql' and 'gin' available at this time)")
 
 	logPrefix = "[" +
 		ansi.Color("go-beget", "154") +
@@ -90,8 +90,16 @@ func main() {
 
 	createUpdateRequest(tmplData)
 
-	if len(*repos) > 0 {
-		createUpdateRepo(tmplData)
+	if len(*impls) > 0 {
+		// contains works for now, since there aren't any conflicts yet
+
+		if strings.Contains(*impls, "sql") {
+			createSQLUpdater(tmplData)
+		}
+
+		if strings.Contains(*impls, "gin") {
+			createGinHandlers(tmplData)
+		}
 	}
 }
 
@@ -183,10 +191,10 @@ func createUpdateRequest(tmplData TemplateData) {
 	log.Printf("UpdateRequest generated %s", ansi.Color(output, "155+b"))
 }
 
-func createUpdateRepo(tmplData TemplateData) {
-	t, err := templates.Asset("templates/updater.tmpl")
+func createSQLUpdater(tmplData TemplateData) {
+	t, err := templates.Asset("templates/sqlUpdater.tmpl")
 
-	tmpl, err := template.New("updater").Parse(string(t))
+	tmpl, err := template.New("sqlUpdater").Parse(string(t))
 
 	if err != nil {
 		panic(err)
@@ -207,14 +215,48 @@ func createUpdateRepo(tmplData TemplateData) {
 		log.Fatal(err)
 	}
 
-	output := fmt.Sprintf("../update/%sUpdater.go", strings.ToLower(tmplData.TypeName))
+	output := fmt.Sprintf("../update/%sSQLUpdater.go", strings.ToLower(tmplData.TypeName))
 	err = ioutil.WriteFile(output, outputBytes, 0644)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("Updater generated %s", ansi.Color(output, "155+b"))
+	log.Printf("SQLUpdater generated %s", ansi.Color(output, "155+b"))
+}
+
+func createGinHandlers(tmplData TemplateData) {
+	t, err := templates.Asset("templates/ginUpdater.tmpl")
+
+	tmpl, err := template.New("ginUpdater").Parse(string(t))
+
+	if err != nil {
+		panic(err)
+	}
+
+	b := []byte{}
+	buf := bytes.NewBuffer(b)
+
+	err = tmpl.Execute(buf, tmplData)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	outputBytes, err := format.Source(buf.Bytes())
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	output := fmt.Sprintf("../update/%sGinUpdater.go", strings.ToLower(tmplData.TypeName))
+	err = ioutil.WriteFile(output, outputBytes, 0644)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("GinUpdater generated %s", ansi.Color(output, "155+b"))
 }
 
 func createUpdateDirectory() error {

@@ -1,0 +1,38 @@
+package update
+/*
+	GENERATED CODE, YOUR EDITS ARE FUTILE
+
+	generated from {{.TypeName}}
+	using http://github.com/brianstarke/go-beget/generator/updater
+*/
+
+import (
+  "github.com/gin-gonic/gin"
+  "github.com/jmoiron/sqlx"
+)
+
+// New{{.TypeName}}UpdateHandler will return a handler for {{.TypeName}}UpdateRequests.
+//
+// The handler assumes that the {{.TypeName}}UpdateRequest will be PATCHed using
+// JSON.
+func New{{.TypeName}}UpdateHandler(db *sqlx.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var ur {{.TypeName}}UpdateRequest
+		err := c.BindJSON(&ur)
+
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+
+		err = NewSQL{{.TypeName}}Updater(db).Update(ur)
+
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(200, gin.H{"status": "ok"})
+		return
+	}
+}

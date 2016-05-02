@@ -1,0 +1,39 @@
+package create
+/*
+	GENERATED CODE, YOUR EDITS ARE FUTILE
+
+	generated from {{.TypeName}}
+	using http://github.com/brianstarke/go-beget/generator/creator
+*/
+
+import (
+  "github.com/gin-gonic/gin"
+  "github.com/jmoiron/sqlx"
+
+  types "{{.TypeImport}}"
+)
+
+// New{{.TypeName}}CreateHandler will return a handler for {{.TypeName}} creates.
+//
+// The handler assumes that a {{.TypeName}} will be PUT using JSON.
+func New{{.TypeName}}CreateHandler(db *sqlx.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var t types.{{.TypeName}}
+		err := c.BindJSON(&t)
+
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+
+		id, err := NewSQL{{.TypeName}}Creator(db).Create(t)
+
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(200, gin.H{"id":id})
+		return
+	}
+}

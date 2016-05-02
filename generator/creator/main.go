@@ -22,7 +22,7 @@ import (
 var (
 	structName = flag.String("struct", "", "name of the struct to generate a creator for")
 	tableName  = flag.String("table", "", "SQL table name if you want to generate SQLCreator")
-	repos      = flag.String("repos", "", "comma separated list of repository implementations you'd like to create (only 'sql' available at this time)")
+	impls      = flag.String("impls", "", "comma separated list of implementations you'd like to generate (only 'sql' and 'gin' available at this time)")
 
 	logPrefix = "[" +
 		ansi.Color("go-beget", "154") +
@@ -88,8 +88,16 @@ func main() {
 		CreatableFields: creatableFields,
 	}
 
-	if len(*repos) > 0 {
-		createCreateRepo(tmplData)
+	if len(*impls) > 0 {
+		// contains works for now, since there aren't any conflicts yet
+
+		if strings.Contains(*impls, "sql") {
+			createSQLCreator(tmplData)
+		}
+
+		if strings.Contains(*impls, "gin") {
+			createGinHandlers(tmplData)
+		}
 	}
 }
 
@@ -141,10 +149,10 @@ func gatherCreatableFields(fields []generator.Field) []CreatableField {
 	return creatableFields
 }
 
-func createCreateRepo(tmplData TemplateData) {
-	t, err := templates.Asset("templates/creator.tmpl")
+func createSQLCreator(tmplData TemplateData) {
+	t, err := templates.Asset("templates/sqlCreator.tmpl")
 
-	tmpl, err := template.New("creator").Parse(string(t))
+	tmpl, err := template.New("sqlCreator").Parse(string(t))
 
 	if err != nil {
 		panic(err)
@@ -167,14 +175,50 @@ func createCreateRepo(tmplData TemplateData) {
 
 	createCreateDirectory()
 
-	output := fmt.Sprintf("../create/%sCreator.go", strings.ToLower(tmplData.TypeName))
+	output := fmt.Sprintf("../create/%sSQLCreator.go", strings.ToLower(tmplData.TypeName))
 	err = ioutil.WriteFile(output, outputBytes, 0644)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("Creator generated %s", ansi.Color(output, "155+b"))
+	log.Printf("SQLCreator generated %s", ansi.Color(output, "155+b"))
+}
+
+func createGinHandlers(tmplData TemplateData) {
+	t, err := templates.Asset("templates/ginCreator.tmpl")
+
+	tmpl, err := template.New("ginCreator").Parse(string(t))
+
+	if err != nil {
+		panic(err)
+	}
+
+	b := []byte{}
+	buf := bytes.NewBuffer(b)
+
+	err = tmpl.Execute(buf, tmplData)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	outputBytes, err := format.Source(buf.Bytes())
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	createCreateDirectory()
+
+	output := fmt.Sprintf("../create/%sGinCreator.go", strings.ToLower(tmplData.TypeName))
+	err = ioutil.WriteFile(output, outputBytes, 0644)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("GinCreator generated %s", ansi.Color(output, "155+b"))
 }
 
 func createCreateDirectory() error {

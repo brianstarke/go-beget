@@ -3,7 +3,9 @@
 [![GoDoc](https://godoc.org/github.com/brianstarke/go-beget?status.svg)](https://godoc.org/github.com/brianstarke/go-beget)
 [![Build Status](https://travis-ci.org/brianstarke/go-beget.svg?branch=master)](https://travis-ci.org/brianstarke/go-beget)
 
-Generate serializable and typesafe search requests to pass around.
+Generate serializable and (somewhat) typesafe search requests to pass around.
+
+The intent is not to recreate Rails, but rather provide a baseline for you to fork to help generate all your boilerplate just the way you like it.
 
 This is still a work in progress.
 
@@ -13,17 +15,19 @@ Add `beget` tags to a struct for which you want to create `SearchRequests` for a
 
 `struct` is the struct you want the `go-beget` generator to look at, `table` is the name of the database table (if you want to use optional SQL statement generation).  `impls` takes a comma separated list of helpers you'd like to auto-generate.  
 
-- **sql** will generate a **SQLSearcher** (currently, **sql** implementation has only been tested on PostgreSQL).
-- **gin** will generate [gin gonic](https://github.com/gin-gonic) handlers that use the **SQLSearcher**.
+- **sql** will generate a **SQLSearcher**/**SQLCreator**/**SQLUpdater** (currently, **sql** implementation has only been tested on PostgreSQL).
+- **gin** will generate [gin gonic](https://github.com/gin-gonic) handlers that use the generated **SQLSearcher**/**SQLCreator**/**SQLUpdater** stuff.
 
-Within the `beget` tag, add **search** to the fields you'd like to be searchable, **create** to the fields you'd like to be inserted by the generated **Creator** and **update** to the fields you want to allow to updated via an **Updater**.  Generally you'd leave the `ID` field without a **create** tag if your database is assigning the IDs.
+Within the `beget` tag, add **search** to the fields you'd like to be searchable, **create** to the fields you'd like to be inserted by the generated **Creator** and **update** to the fields you want to allow to updated via an **Updater**.  
+
+Generally you'd leave the `ID` field without a **create** tag if your database is assigning the IDs.
 
 ```go
 package types
 
 //go:generate searcher -struct=Thing -table=things -impls=sql,gin
-//go:generate creator -struct=Thing -table=things -repos=sql
-//go:generate updater -struct=Thing -table=things -repos=sql
+//go:generate creator -struct=Thing -table=things -impls=sql,gin
+//go:generate updater -struct=Thing -table=things -impls=sql,gin
 
 // Thing has characteristics
 type Thing struct {
@@ -35,7 +39,7 @@ type Thing struct {
 }
 ```
 
-NOTE: For now, `go-beget` expects that you keep your types in their own package and will generate it's code into a directory called `search` (or `update` or `create`) as a peer of wherever your types are.
+NOTE: For now, `go-beget` expects that you keep your types in some other package and will generate it's code into a directory called `search` (or `update` or `create`) as a peer of wherever the type is.
 
 Run `go generate ./...`
 
@@ -43,13 +47,17 @@ Run `go generate ./...`
 [go-beget/searcher] Generating searcher for Thing
 [go-beget/searcher] ../search does not exist, I'll create it
 [go-beget/searcher] SearchRequest generated ../search/thingSearchRequest.go
-[go-beget/searcher] SQLSearchRepo generated ../search/thingSearchRepo.go
+[go-beget/searcher] SQLSearcher generated ../search/thingSQLSearcher.go
+[go-beget/searcher] GinSearcher generated ../search/thingGinSearcher.go
 [go-beget/creator] Generating creator for Thing
 [go-beget/creator] ../create does not exist, I'll create it
-[go-beget/creator] CreateRepo generated ../create/thingCreateRepo.go
+[go-beget/creator] SQLCreator generated ../create/thingSQLCreator.go
+[go-beget/creator] GinCreator generated ../create/thingGinCreator.go
 [go-beget/updater] Generating updater for Thing
+[go-beget/updater] ../update does not exist, I'll create it
 [go-beget/updater] UpdateRequest generated ../update/thingUpdateRequest.go
-[go-beget/updater] UpdateRepo generated ../update/thingUpdateRepo.go
+[go-beget/updater] SQLUpdater generated ../update/thingSQLUpdater.go
+[go-beget/updater] GinUpdater generated ../update/thingGinUpdater.go
 ```
 
 Example of using a generated search request.
@@ -134,13 +142,15 @@ thing, err := search.NewSQLThingSearcher(db).GetByField(search.ThingID, 16)
 // do things with result, check error etc...
 ```
 
-### Using GinSearchers
+### Using GinSearchers/GinCreators
 
 If you also generated the [gin gonic](https://github.com/gin-gonic) handlers, you can wire them up in your routes like so:
 
 ```go
-router.POST("/thing", search.NewThingSearchHandler(db))
-router.GET("/thing/:id", search.NewThingGetByIDHandler(db))
+router.PUT("/thing", create.NewThingCreateHandler(db)) 				// create
+router.POST("/thing", search.NewThingSearchHandler(db))  			// search
+router.GET("/thing/:id", search.NewThingGetByIDHandler(db)) 	// get
+router.PATCH("/thing", updater.NewThingUpdateHandler(db)) 		// update
 ```
 
 The generated routes expect JSON and return JSON.  On error, they return status code **500** and the error in a JSON struct like this:
@@ -167,7 +177,9 @@ Then `./rebuild_templates.sh` from the root of this project.
 
 ### TODO
 
-- add a Get method to return single result
 - add an AddField method
-- tagging ID fields to do easier GetByID queries?
 - make all generated code pass golint
+- break dependency on sqlx and gin?
+- generate deleters?
+- add fake/mock implementations for testing
+- support XML?

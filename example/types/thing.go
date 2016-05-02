@@ -1,8 +1,8 @@
 package types
 
 //go:generate searcher -struct=Thing -table=things -impls=sql,gin
-//go:generate creator -struct=Thing -table=things -repos=sql
-//go:generate updater -struct=Thing -table=things -repos=sql
+//go:generate creator -struct=Thing -table=things -impls=sql,gin
+//go:generate updater -struct=Thing -table=things -impls=sql,gin
 
 // Thing has characteristics
 type Thing struct {
