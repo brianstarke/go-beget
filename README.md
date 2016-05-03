@@ -163,6 +163,32 @@ The generated routes expect JSON and return JSON.  On error, they return status 
 
 On success they return **200** and the result as JSON.
 
+## Sample JSON SearchRequest
+
+```javascript
+{
+    "filters":[{
+      "field": "color",
+      "value": "RED",
+      "operator": "EQ",
+      "condition": "AND"
+    },
+		{
+			"field": "size",
+			"value": 13,
+			"operator": "GT",
+			"condition": "AND"
+		}],
+    "fields": ["height", "type"],
+    "orderBy": {
+        "field": "createdAt",
+        "desc": true
+    },
+    "limit":20,
+    "offset": 2
+}
+```
+
 *TODO document the creator usage*
 
 *TODO document the updater usage*
