@@ -56,7 +56,9 @@ func (r *SQL{{.TypeName}}Searcher) Search(searchRequest {{.TypeName}}SearchReque
 
 // Count converts a {{.TypeName}}SearchRequest in to SQL and executes it
 func (r *SQL{{.TypeName}}Searcher) Count(searchRequest {{.TypeName}}SearchRequest) (int32, error) {
-	var results int32
+	var results []struct{
+		Count int32 `db:"cnt"`
+	}
 
 	sqlStr, values, err := searcher.GenerateSelectSQL(&searchRequest, true)
 
@@ -68,11 +70,11 @@ func (r *SQL{{.TypeName}}Searcher) Count(searchRequest {{.TypeName}}SearchReques
 
 	if err != nil {
 		if strings.Contains(err.Error(), "no rows in result set") {
-			return results, nil
+			return 0, fmt.Errorf("No results returned")
 		}
 	}
 
-	return results, err
+	return results[0].Count, err
 }
 
 // GetByField is a convenience method to return just one result by matching on a single field

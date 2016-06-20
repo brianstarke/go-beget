@@ -38,7 +38,7 @@ func GenerateSelectSQL(sr SearchRequest, isCount bool) (sqlStr string, values in
 	var sql squirrel.SelectBuilder
 
 	if isCount {
-		sql = psql.Select("COUNT(*)")
+		sql = psql.Select("COUNT(*) AS cnt")
 	} else {
 		if len(sr.GetFields()) == 0 {
 			sql = psql.Select("*")
@@ -51,19 +51,22 @@ func GenerateSelectSQL(sr SearchRequest, isCount bool) (sqlStr string, values in
 
 	getPredicates(&sql, sr.GetFilters())
 
-	if sr.GetLimit() > 0 {
-		sql = sql.Limit(uint64(sr.GetLimit()))
-	}
+	if !isCount {
 
-	if sr.GetOffset() > 0 {
-		sql = sql.Offset(uint64(sr.GetOffset()))
-	}
+		if sr.GetLimit() > 0 {
+			sql = sql.Limit(uint64(sr.GetLimit()))
+		}
 
-	if sr.GetOrderBy().Field.DbFieldName() != "" {
-		if sr.GetOrderBy().Descending {
-			sql = sql.OrderBy(sr.GetOrderBy().Field.DbFieldName() + " DESC")
-		} else {
-			sql = sql.OrderBy(sr.GetOrderBy().Field.DbFieldName())
+		if sr.GetOffset() > 0 {
+			sql = sql.Offset(uint64(sr.GetOffset()))
+		}
+
+		if sr.GetOrderBy().Field.DbFieldName() != "" {
+			if sr.GetOrderBy().Descending {
+				sql = sql.OrderBy(sr.GetOrderBy().Field.DbFieldName() + " DESC")
+			} else {
+				sql = sql.OrderBy(sr.GetOrderBy().Field.DbFieldName())
+			}
 		}
 	}
 
