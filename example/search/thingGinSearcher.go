@@ -22,18 +22,44 @@ func NewThingSearchHandler(db *sqlx.DB) gin.HandlerFunc {
 		err := c.BindJSON(&sr)
 
 		if err != nil {
-			c.JSON(500, gin.H{"error": err.Error()})
+			c.JSON(200, gin.H{"error": err.Error()})
 			return
 		}
 
 		results, err := NewSQLThingSearcher(db).Search(sr)
 
 		if err != nil {
-			c.JSON(500, gin.H{"error": err.Error()})
+			c.JSON(200, gin.H{"error": err.Error()})
 			return
 		}
 
 		c.JSON(200, results)
+		return
+	}
+}
+
+// NewThingCountHandler will return a handler for ThingSearchRequests.
+//
+// The handler assumes that the ThingSearchRequest will be POSTed using
+// JSON.
+func NewThingCountHandler(db *sqlx.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var sr ThingSearchRequest
+		err := c.BindJSON(&sr)
+
+		if err != nil {
+			c.JSON(200, gin.H{"error": err.Error()})
+			return
+		}
+
+		result, err := NewSQLThingSearcher(db).Count(sr)
+
+		if err != nil {
+			c.JSON(200, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(200, gin.H{"count": result})
 		return
 	}
 }
@@ -48,14 +74,14 @@ func NewThingGetByIDHandler(db *sqlx.DB) gin.HandlerFunc {
 		id := c.Param("id")
 
 		if len(id) == 0 {
-			c.JSON(500, gin.H{"error": "No ID provided"})
+			c.JSON(200, gin.H{"error": "No ID provided"})
 			return
 		}
 
 		result, err := NewSQLThingSearcher(db).GetByField(ThingID, id)
 
 		if err != nil {
-			c.JSON(500, gin.H{"error": err.Error()})
+			c.JSON(200, gin.H{"error": err.Error()})
 			return
 		}
 

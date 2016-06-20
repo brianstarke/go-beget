@@ -21,18 +21,44 @@ func New{{.TypeName}}SearchHandler(db *sqlx.DB) gin.HandlerFunc {
 		err := c.BindJSON(&sr)
 
 		if err != nil {
-			c.JSON(500, gin.H{"error": err.Error()})
+			c.JSON(200, gin.H{"error": err.Error()})
 			return
 		}
 
 		results, err := NewSQL{{.TypeName}}Searcher(db).Search(sr)
 
 		if err != nil {
-			c.JSON(500, gin.H{"error": err.Error()})
+			c.JSON(200, gin.H{"error": err.Error()})
 			return
 		}
 
 		c.JSON(200, results)
+		return
+	}
+}
+
+// New{{.TypeName}}CountHandler will return a handler for {{.TypeName}}SearchRequests.
+//
+// The handler assumes that the {{.TypeName}}SearchRequest will be POSTed using
+// JSON.
+func New{{.TypeName}}CountHandler(db *sqlx.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var sr {{.TypeName}}SearchRequest
+		err := c.BindJSON(&sr)
+
+		if err != nil {
+			c.JSON(200, gin.H{"error": err.Error()})
+			return
+		}
+
+		result, err := NewSQL{{.TypeName}}Searcher(db).Count(sr)
+
+		if err != nil {
+			c.JSON(200, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(200, gin.H{"count": result})
 		return
 	}
 }
@@ -47,14 +73,14 @@ func New{{.TypeName}}GetByIDHandler(db *sqlx.DB) gin.HandlerFunc {
     id := c.Param("id")
 
     if len(id) == 0 {
-      c.JSON(500, gin.H{"error": "No ID provided"})
+      c.JSON(200, gin.H{"error": "No ID provided"})
       return
     }
 
     result, err := NewSQL{{.TypeName}}Searcher(db).GetByField({{.TypeName}}ID, id)
 
     if err != nil {
-      c.JSON(500, gin.H{"error": err.Error()})
+      c.JSON(200, gin.H{"error": err.Error()})
       return
     }
 
