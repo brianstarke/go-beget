@@ -32,15 +32,19 @@ var (
 //
 // (example uses sqlx http://jmoiron.github.io/sqlx/#getAndSelect)
 // NOTE: I've only tried this with PostgreSQL
-func GenerateSelectSQL(sr SearchRequest) (sqlStr string, values interface{}, err error) {
+func GenerateSelectSQL(sr SearchRequest, isCount bool) (sqlStr string, values interface{}, err error) {
 	psql := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
 
 	var sql squirrel.SelectBuilder
 
-	if len(sr.GetFields()) == 0 {
-		sql = psql.Select("*")
+	if isCount {
+		sql = psql.Select("COUNT(*)")
 	} else {
-		sql = psql.Select(sr.GetFields()...)
+		if len(sr.GetFields()) == 0 {
+			sql = psql.Select("*")
+		} else {
+			sql = psql.Select(sr.GetFields()...)
+		}
 	}
 
 	sql = sql.From(sr.GetTableName())
@@ -67,7 +71,11 @@ func GenerateSelectSQL(sr SearchRequest) (sqlStr string, values interface{}, err
 
 	log.SetFlags(0)
 	log.SetPrefix(logPrefix)
-	log.Printf("SELECT SQL generated %s", ansi.Color(sqlStr, "155+b"))
+	if isCount {
+		log.Printf("COUNT SQL generated %s", ansi.Color(sqlStr, "155+b"))
+	} else {
+		log.Printf("SELECT SQL generated %s", ansi.Color(sqlStr, "155+b"))
+	}
 	log.SetPrefix("")
 
 	return sqlStr, values, err
