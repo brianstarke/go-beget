@@ -90,7 +90,7 @@ func templatesGincreatorTmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/ginCreator.tmpl", size: 808, mode: os.FileMode(420), modTime: time.Unix(1462206752, 0)}
+	info := bindataFileInfo{name: "templates/ginCreator.tmpl", size: 808, mode: os.FileMode(420), modTime: time.Unix(1468871773, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -110,7 +110,7 @@ func templatesGinsearcherTmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/ginSearcher.tmpl", size: 2128, mode: os.FileMode(420), modTime: time.Unix(1466454771, 0)}
+	info := bindataFileInfo{name: "templates/ginSearcher.tmpl", size: 2128, mode: os.FileMode(420), modTime: time.Unix(1468871773, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -130,7 +130,7 @@ func templatesGinupdaterTmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/ginUpdater.tmpl", size: 821, mode: os.FileMode(420), modTime: time.Unix(1462207591, 0)}
+	info := bindataFileInfo{name: "templates/ginUpdater.tmpl", size: 821, mode: os.FileMode(420), modTime: time.Unix(1468871773, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -150,7 +150,7 @@ func templatesSearchrequestTmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/searchRequest.tmpl", size: 4282, mode: os.FileMode(420), modTime: time.Unix(1461351203, 0)}
+	info := bindataFileInfo{name: "templates/searchRequest.tmpl", size: 4282, mode: os.FileMode(420), modTime: time.Unix(1468871773, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -170,7 +170,7 @@ func templatesSqlcreatorTmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/sqlCreator.tmpl", size: 1124, mode: os.FileMode(420), modTime: time.Unix(1458055623, 0)}
+	info := bindataFileInfo{name: "templates/sqlCreator.tmpl", size: 1124, mode: os.FileMode(420), modTime: time.Unix(1468871773, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -190,7 +190,7 @@ func templatesSqlsearcherTmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/sqlSearcher.tmpl", size: 2914, mode: os.FileMode(420), modTime: time.Unix(1466454482, 0)}
+	info := bindataFileInfo{name: "templates/sqlSearcher.tmpl", size: 2914, mode: os.FileMode(420), modTime: time.Unix(1468871773, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -210,7 +210,7 @@ func templatesSqlupdaterTmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/sqlUpdater.tmpl", size: 1508, mode: os.FileMode(420), modTime: time.Unix(1461352659, 0)}
+	info := bindataFileInfo{name: "templates/sqlUpdater.tmpl", size: 1508, mode: os.FileMode(420), modTime: time.Unix(1468871773, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -230,7 +230,7 @@ func templatesUpdaterequestTmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/updateRequest.tmpl", size: 4655, mode: os.FileMode(420), modTime: time.Unix(1461352712, 0)}
+	info := bindataFileInfo{name: "templates/updateRequest.tmpl", size: 4655, mode: os.FileMode(420), modTime: time.Unix(1468871773, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
