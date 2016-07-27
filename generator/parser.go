@@ -207,11 +207,11 @@ func parseStructFields(file *ast.File, structName string) []Field {
 /*
 Parse a tag value, e.g.
 
-	`db:"name" beget:"search,update"`
+	`db:"first_name" json:"firstName"`
 
 in to a map, e.g.
 
-	["beget"]{"search,create"}
+	["json"]{"firstName"}
 */
 func parseTags(tagValue string) map[string]string {
 	tags := make(map[string]string)

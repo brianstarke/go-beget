@@ -29,13 +29,13 @@ var (
 )
 
 /*
-SearchableField holds the parsed values from the tags present on the struct's
+Field holds the parsed values from the tags present on the struct's
 fields.
 
 If there are no `db` or `json` tags provided, we will just use the Field Name
 value for those purposes.
 */
-type SearchableField struct {
+type Field struct {
 	Name     string // the name of the field in Go
 	DbName   string // the name of the field in the db
 	JSONName string // the name of the field in json
@@ -46,12 +46,10 @@ TemplateData is comprised of the metadata needed during generation of both
 the SearchRequest and the Searcher types.
 */
 type TemplateData struct {
-	PackageName      string
-	TypeImport       string
-	SearchImport     string
-	TypeName         string
-	TableName        string
-	SearchableFields []SearchableField
+	PackageName string
+	TypeName    string
+	TableName   string
+	Fields      []Field
 }
 
 func main() {
@@ -73,68 +71,57 @@ func main() {
 	}
 
 	// pull out the searchable fields
-	searchableFields := gatherSearchableFields(data.Fields)
+	fields := gatherFields(data.Fields)
 
 	pathParts := strings.Split(data.PkgImportPath, "/")
 
 	tmplData := TemplateData{
-		PackageName:      pathParts[len(pathParts)-1],
-		TypeImport:       data.PkgImportPath,
-		SearchImport:     strings.Replace(data.PkgImportPath, "/types", "/search", 1),
-		TypeName:         data.Name,
-		TableName:        *tableName,
-		SearchableFields: searchableFields,
+		PackageName: pathParts[len(pathParts)-1],
+		TypeName:    data.Name,
+		TableName:   *tableName,
+		Fields:      fields,
 	}
 
 	createSearcher(tmplData)
 }
 
-func gatherSearchableFields(fields []generator.Field) []SearchableField {
-	var searchableFields []SearchableField
+func gatherFields(f []generator.Field) []Field {
+	var fields []Field
 
-	for _, field := range fields {
-		bTags, ok := field.Tags["beget"]
+	for _, field := range f {
 
-		// the field may have other tags instead of `beget`, just pass through
+		var dbName, jsonName string
+
+		// if no db tag we will just use the field name as the db field name
+		dbTags, ok := field.Tags["db"]
+
 		if !ok {
-			continue
+			dbName = field.Name
+		} else {
+			// strip out omitempty and commas
+			dbName = strings.Replace(dbTags, ",", "", -1)
+			dbName = strings.Replace(dbName, "omitempty", "", -1)
 		}
 
-		// is this a searchable field
-		if strings.Contains(bTags, "search") {
-			var dbName, jsonName string
+		// same thing for json tags
+		jsonTags, ok := field.Tags["json"]
 
-			// if no db tag we will just use the field name as the db field name
-			dbTags, ok := field.Tags["db"]
-
-			if !ok {
-				dbName = field.Name
-			} else {
-				// strip out omitempty and commas
-				dbName = strings.Replace(dbTags, ",", "", -1)
-				dbName = strings.Replace(dbName, "omitempty", "", -1)
-			}
-
-			// same thing for json tags
-			jsonTags, ok := field.Tags["json"]
-
-			if !ok {
-				jsonName = field.Name
-			} else {
-				// strip out omitempty and commas
-				jsonName = strings.Replace(jsonTags, ",", "", -1)
-				jsonName = strings.Replace(jsonName, "omitempty", "", -1)
-			}
-
-			searchableFields = append(searchableFields, SearchableField{
-				Name:     field.Name,
-				DbName:   dbName,
-				JSONName: jsonName,
-			})
+		if !ok {
+			jsonName = field.Name
+		} else {
+			// strip out omitempty and commas
+			jsonName = strings.Replace(jsonTags, ",", "", -1)
+			jsonName = strings.Replace(jsonName, "omitempty", "", -1)
 		}
+
+		fields = append(fields, Field{
+			Name:     field.Name,
+			DbName:   dbName,
+			JSONName: jsonName,
+		})
 	}
 
-	return searchableFields
+	return fields
 }
 
 func createSearcherEnums(tmplData TemplateData) {

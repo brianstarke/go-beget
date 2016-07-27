@@ -33,19 +33,19 @@ type {{.TypeName}}Field int
 
 // Faux enum'd for helpfulness
 const ({{$typeName := .TypeName}}
-{{range $i, $x := .SearchableFields}}{{$typeName}}{{$x.Name}} {{if eq $i 0}}{{$typeName}}Field = iota{{end}}
+{{range $i, $x := .Fields}}{{$typeName}}{{$x.Name}} {{if eq $i 0}}{{$typeName}}Field = iota{{end}}
 {{end}})
 
 
 // JSON name constants
 const ({{$typeName := .TypeName}}
-{{range $i, $x := .SearchableFields}}c{{$x.Name}} string = "{{$x.JSONName}}"
+{{range $i, $x := .Fields}}c{{$x.Name}} string = "{{$x.JSONName}}"
 {{end}})
 
 // DbFieldName returns the name of the field to use in the SQL query
 func (s {{.TypeName}}Field) DbFieldName() string {
 	switch s {
-	{{range $i, $x := .SearchableFields}}case {{$typeName}}{{$x.Name}}:
+	{{range $i, $x := .Fields}}case {{$typeName}}{{$x.Name}}:
 		return "{{$x.DbName}}"
 	{{end}}
 	}
@@ -57,7 +57,7 @@ func (s {{.TypeName}}Field) MarshalText() ([]byte, error) {
 	var data string
 
 	switch s {
-	{{range $i, $x := .SearchableFields}}case {{$typeName}}{{$x.Name}}:
+	{{range $i, $x := .Fields}}case {{$typeName}}{{$x.Name}}:
 		data = c{{$x.Name}}
 	{{end}}
 	default:
@@ -71,7 +71,7 @@ func (s *{{.TypeName}}Field) UnmarshalText(b []byte) error {
 	str := strings.Trim(string(b), `"`)
 
 	switch str {
-	{{range $i, $x := .SearchableFields}}case c{{$x.Name}}:
+	{{range $i, $x := .Fields}}case c{{$x.Name}}:
 		*s = {{$typeName}}{{$x.Name}}
 	{{end}}
 	default:
