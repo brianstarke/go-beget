@@ -5,18 +5,15 @@
 
 Generate serializable and (somewhat) typesafe search requests to pass around.
 
-The intent is not to recreate Rails, but rather provide a baseline for you to fork to help generate all your boilerplate just the way you like it.
-
-This is still a work in progress.
+The intent is not to create an ORM, but rather provide a forkable baseline to help generate all your boilerplate just the way you like it.
 
 ### The basics
 
 Add `beget` tags to a struct for which you want to create `SearchRequests` for and add the `go:generate` comment.
 
-`struct` is the struct you want the `go-beget` generator to look at, `table` is the name of the database table (if you want to use optional SQL statement generation).  `impls` takes a comma separated list of helpers you'd like to auto-generate.  
+`struct` is the struct you want the `go-beget` generator to look at, `table` is the name of the database table to be used in SQL statement generation.
 
-- **sql** will generate a **SQLSearcher**/**SQLCreator**/**SQLUpdater** (currently, **sql** implementation has only been tested on PostgreSQL).
-- **gin** will generate [gin gonic](https://github.com/gin-gonic) handlers that use the generated **SQLSearcher**/**SQLCreator**/**SQLUpdater** stuff.
+- _(currently, **sql** statement generation only works on PostgreSQL)_
 
 Within the `beget` tag, add **search** to the fields you'd like to be searchable, **create** to the fields you'd like to be inserted by the generated **Creator** and **update** to the fields you want to allow to updated via an **Updater**.  
 
@@ -25,7 +22,7 @@ Generally you'd leave the `ID` field without a **create** tag if your database i
 ```go
 package types
 
-//go:generate searcher -struct=Thing -table=things -impls=sql,gin
+//go:generate searcher -struct=Thing -table=things
 //go:generate creator -struct=Thing -table=things -impls=sql,gin
 //go:generate updater -struct=Thing -table=things -impls=sql,gin
 
@@ -46,9 +43,8 @@ Run `go generate ./...`
 ```
 [go-beget/searcher] Generating searcher for Thing
 [go-beget/searcher] ../search does not exist, I'll create it
-[go-beget/searcher] SearchRequest generated ../search/thingSearchRequest.go
-[go-beget/searcher] SQLSearcher generated ../search/thingSQLSearcher.go
-[go-beget/searcher] GinSearcher generated ../search/thingGinSearcher.go
+[go-beget/searcher] Generated search_enums [../search/searcherEnums.go]
+[go-beget/searcher] Searcher generated [../search/thingSearcher.go]
 [go-beget/creator] Generating creator for Thing
 [go-beget/creator] ../create does not exist, I'll create it
 [go-beget/creator] SQLCreator generated ../create/thingSQLCreator.go
@@ -63,35 +59,45 @@ Run `go generate ./...`
 Example of using a generated search request.
 
 ```go
-var sr search.ThingSearchRequest
+package main
 
-sr.Fields = []search.ThingField{
-  search.ThingColor,
-  search.ThingHeight,
+import (
+	"encoding/json"
+	"log"
+
+	"github.com/brianstarke/go-beget/example/search"
+)
+
+func main() {
+	var sr search.ThingSearchRequest
+
+	sr.
+		AddFields(search.ThingColor, search.ThingHeight).
+		AddFilter(search.ThingColor, "red", func(f *search.ThingFilter) {
+			f.Operator = search.EQ
+			f.Condition = search.AND
+		}).
+		SetOrderBy(search.ThingHeight, false).
+		SetLimit(10)
+
+	jsonb, _ := json.MarshalIndent(sr, "", "  ")
+
+	log.Println(string(jsonb))
+
+	sql, _, _ := sr.GenerateSelectSQL()
+
+	log.Println(sql)
 }
-
-sr.AddFilter(
-  search.ThingColor,
-  "red",
-  searcher.EQ,
-  searcher.AND)
-
-sr.SetOrderBy(search.ThingHeight, false)
-
-sr.Limit = 10
-
-jsonb, _ := json.MarshalIndent(sr, "", "  ")
-
-log.Println(string(jsonb))
-
-searcher.GenerateSelectSQL(&sr)
 ```
 
 This outputs
 
 ```
-2016/03/03 15:47:05 {
-  "limit": 10,
+2016/07/26 08:42:55 {
+  "fields": [
+    "color",
+    "height"
+  ],
   "filters": [
     {
       "field": "color",
@@ -102,55 +108,49 @@ This outputs
   ],
   "orderBy": {
     "field": "height",
-    "desc": false
+    "isDescending": false
   },
-  "fields": [
-    "color",
-    "height"
-  ]
+  "limit": 10,
+  "offset": 0
 }
-[go-beget/searcher] SELECT SQL generated - SELECT color, height FROM things WHERE (color = $1) ORDER BY height LIMIT 10
+2016/07/26 08:42:55 SELECT color, height FROM things WHERE (color = $1) ORDER BY height LIMIT 10
 ```
 
 ### Using SQLSearchers
 
-You can use a generated **searcher** to execute **SearchRequests** or pull single results by a particular field.  The latter is useful for doing a get by ID sort of thing.
+You can use a generated **SearchRequests** to execute a search for multiple results.
 
 ```go
 // construct the search request
 var sr search.ThingSearchRequest
 
-sr.AddFilter(
-  search.ThingColor,
-  "red",
-  searcher.EQ,
-  searcher.AND)
+sr.
+	AddFilter(search.ThingColor, "red").
+	SetOrderBy(search.ThingHeight, false).
+	SetLimit(10).
+	SetOffset(10)
 
-sr.SetOrderBy(search.ThingHeight, false)
-sr.Limit = 10
-sr.Offset = 2
-
-// run the search request (where db is a working *sqlx.DB instance)
-things, err := search.NewSQLThingSearcher(db).Search(sr)
+// run the search request (where db is a working *sql.DB instance)
+var results []type.Thing
+err := sr.ExecuteSearch(db, &results)
 // do things with results, check error etc...
+
+// or get a count of all results...
+count, err := sr.ExecuteCount(db)
+
+// or pull a single result by ID
+// TODO generate that
 ```
 
-Or to simply just get a single result by a particular field...
+### Using HTTP handlers (totally optional)
+
+`beget` also generates HTTP handlers, you can wire them up in your routes like so:
 
 ```go
-thing, err := search.NewSQLThingSearcher(db).GetByField(search.ThingID, 16)
-// do things with result, check error etc...
-```
-
-### Using GinSearchers/GinCreators
-
-If you also generated the [gin gonic](https://github.com/gin-gonic) handlers, you can wire them up in your routes like so:
-
-```go
-router.PUT("/thing", create.NewThingCreateHandler(db)) 				// create
-router.POST("/thing", search.NewThingSearchHandler(db))  			// search
-router.GET("/thing/:id", search.NewThingGetByIDHandler(db)) 	// get
-router.PATCH("/thing", updater.NewThingUpdateHandler(db)) 		// update
+func main() {
+  http.HandleFunc("/", search.NewThingSearchHandlerFunc(db))
+  http.ListenAndServe(":8080", nil)
+}
 ```
 
 The generated routes expect JSON and return JSON.  On error, they return status code **500** and the error in a JSON struct like this:
@@ -182,7 +182,7 @@ On success they return **200** and the result as JSON.
     "fields": ["height", "type"],
     "orderBy": {
         "field": "createdAt",
-        "desc": true
+        "isDescending": true
     },
     "limit":20,
     "offset": 2
@@ -203,9 +203,8 @@ Then `./rebuild_templates.sh` from the root of this project.
 
 ### TODO
 
-- add an AddField method
 - make all generated code pass golint
-- break dependency on sqlx and gin?
+- break dependency on sqlx?
 - generate deleters?
 - add fake/mock implementations for testing
 - support XML?

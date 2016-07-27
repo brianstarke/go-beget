@@ -21,8 +21,7 @@ import (
 
 var (
 	structName = flag.String("struct", "", "name of the struct to generate a searcher for")
-	tableName  = flag.String("table", "", "SQL table name if you want to generate SQLSearcher")
-	impls      = flag.String("impls", "", "comma separated list of implementations you'd like to generate (only 'sql' and 'gin' available at this time)")
+	tableName  = flag.String("table", "", "SQL table name")
 
 	logPrefix = "[" +
 		ansi.Color("go-beget", "154") +
@@ -88,19 +87,8 @@ func main() {
 		SearchableFields: searchableFields,
 	}
 
-	createSearchRequest(tmplData)
-
-	if len(*impls) > 0 {
-		// contains works for now, since there aren't any conflicts yet
-
-		if strings.Contains(*impls, "sql") {
-			createSQLSearcher(tmplData)
-		}
-
-		if strings.Contains(*impls, "gin") {
-			createGinHandlers(tmplData)
-		}
-	}
+	createSearchDirectory()
+	createSearcher(tmplData)
 }
 
 func gatherSearchableFields(fields []generator.Field) []SearchableField {
@@ -151,14 +139,18 @@ func gatherSearchableFields(fields []generator.Field) []SearchableField {
 	return searchableFields
 }
 
-func createSearchRequest(tmplData TemplateData) {
-	t, err := templates.Asset("templates/searchRequest.tmpl")
+func createSearcherEnums() {
+	if _, err := os.Stat("../search/searchEnums.go"); !os.IsNotExist(err) {
+		return
+	}
+
+	t, err := templates.Asset("templates/searcher_enums.tmpl")
 
 	if err != nil {
 		panic(err)
 	}
 
-	searchRequestTmpl, err := template.New("searchRequest").Parse(string(t))
+	searchRequestTmpl, err := template.New("searcher_enums").Parse(string(t))
 
 	if err != nil {
 		panic(err)
@@ -167,7 +159,7 @@ func createSearchRequest(tmplData TemplateData) {
 	b := []byte{}
 	buf := bytes.NewBuffer(b)
 
-	err = searchRequestTmpl.Execute(buf, tmplData)
+	err = searchRequestTmpl.Execute(buf, nil)
 
 	if err != nil {
 		panic(err)
@@ -179,22 +171,22 @@ func createSearchRequest(tmplData TemplateData) {
 		panic(err)
 	}
 
-	createSearchDirectory()
-
-	output := fmt.Sprintf("../search/%sSearchRequest.go", strings.ToLower(tmplData.TypeName))
+	output := fmt.Sprintf("../search/searcherEnums.go")
 	err = ioutil.WriteFile(output, outputBytes, 0644)
 
 	if err != nil {
 		panic(err)
 	}
 
-	log.Printf("SearchRequest generated %s", ansi.Color(output, "155+b"))
+	log.Printf("Generated search_enums [%s]", ansi.Color(output, "155+b"))
 }
 
-func createSQLSearcher(tmplData TemplateData) {
-	t, err := templates.Asset("templates/sqlSearcher.tmpl")
+func createSearcher(tmplData TemplateData) {
+	createSearcherEnums()
 
-	tmpl, err := template.New("sqlSearcher").Parse(string(t))
+	t, err := templates.Asset("templates/searcher.tmpl")
+
+	tmpl, err := template.New("searcher").Parse(string(t))
 
 	if err != nil {
 		panic(err)
@@ -215,48 +207,14 @@ func createSQLSearcher(tmplData TemplateData) {
 		log.Fatal(err)
 	}
 
-	output := fmt.Sprintf("../search/%sSQLSearcher.go", strings.ToLower(tmplData.TypeName))
+	output := fmt.Sprintf("../search/%sSearcher.go", strings.ToLower(tmplData.TypeName))
 	err = ioutil.WriteFile(output, outputBytes, 0644)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("SQLSearcher generated %s", ansi.Color(output, "155+b"))
-}
-
-func createGinHandlers(tmplData TemplateData) {
-	t, err := templates.Asset("templates/ginSearcher.tmpl")
-
-	tmpl, err := template.New("ginSearcher").Parse(string(t))
-
-	if err != nil {
-		panic(err)
-	}
-
-	b := []byte{}
-	buf := bytes.NewBuffer(b)
-
-	err = tmpl.Execute(buf, tmplData)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	outputBytes, err := format.Source(buf.Bytes())
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	output := fmt.Sprintf("../search/%sGinSearcher.go", strings.ToLower(tmplData.TypeName))
-	err = ioutil.WriteFile(output, outputBytes, 0644)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("GinSearcher generated %s", ansi.Color(output, "155+b"))
+	log.Printf("Searcher generated [%s]", ansi.Color(output, "155+b"))
 }
 
 func createSearchDirectory() error {
