@@ -1,8 +1,8 @@
-package search
+package example
 
 // GENERATED CODE, EDITS WILL BE LOST
 //
-// generated from {{.TypeName}} in {{.TypeImport}}
+// generated from Thing in github.com/brianstarke/go-beget/example
 // using http://github.com/brianstarke/go-beget/generator/searcher
 
 import (
@@ -15,52 +15,74 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	searchType "{{.TypeImport}}"
 	sq "github.com/lann/squirrel"
 )
 
-// {{.TypeName}}SearchRequest is a serializable SearchRequest for {{.TypeName}}.
-type {{.TypeName}}SearchRequest struct {
-	Fields []{{.TypeName}}Field `json:"fields"`
-	Filters []{{.TypeName}}Filter `json:"filters"`
-	OrderBy *{{.TypeName}}OrderBy `json:"orderBy"`
-	Limit int `json:"limit"`
-	Offset int `json:"offset"`
+// ThingSearchRequest is a serializable SearchRequest for Thing.
+type ThingSearchRequest struct {
+	Fields  []ThingField  `json:"fields"`
+	Filters []ThingFilter `json:"filters"`
+	OrderBy *ThingOrderBy `json:"orderBy"`
+	Limit   int           `json:"limit"`
+	Offset  int           `json:"offset"`
 }
 
-// {{.TypeName}}Field is a field within the {{.TypeName}} struct
+// ThingField is a field within the Thing struct
 // that is able to be filtered on, sorted on, or returned.
-type {{.TypeName}}Field int
+type ThingField int
 
 // Faux enum'd for helpfulness
-const ({{$typeName := .TypeName}}
-{{range $i, $x := .SearchableFields}}{{$typeName}}{{$x.Name}} {{if eq $i 0}}{{$typeName}}Field = iota{{end}}
-{{end}})
-
+const (
+	ThingID ThingField = iota
+	ThingColor
+	ThingDescription
+	ThingLength
+	ThingHeight
+)
 
 // JSON name constants
-const ({{$typeName := .TypeName}}
-{{range $i, $x := .SearchableFields}}c{{$x.Name}} string = "{{$x.JSONName}}"
-{{end}})
+const (
+	cID          string = "id"
+	cColor       string = "color"
+	cDescription string = "description"
+	cLength      string = "length"
+	cHeight      string = "height"
+)
 
 // DbFieldName returns the name of the field to use in the SQL query
-func (s {{.TypeName}}Field) DbFieldName() string {
+func (s ThingField) DbFieldName() string {
 	switch s {
-	{{range $i, $x := .SearchableFields}}case {{$typeName}}{{$x.Name}}:
-		return "{{$x.DbName}}"
-	{{end}}
+	case ThingID:
+		return "id"
+	case ThingColor:
+		return "color"
+	case ThingDescription:
+		return "description"
+	case ThingLength:
+		return "length"
+	case ThingHeight:
+		return "height"
+
 	}
 	return ""
 }
 
 // MarshalText implements https://golang.org/pkg/encoding/#TextMarshaler
-func (s {{.TypeName}}Field) MarshalText() ([]byte, error) {
+func (s ThingField) MarshalText() ([]byte, error) {
 	var data string
 
 	switch s {
-	{{range $i, $x := .SearchableFields}}case {{$typeName}}{{$x.Name}}:
-		data = c{{$x.Name}}
-	{{end}}
+	case ThingID:
+		data = cID
+	case ThingColor:
+		data = cColor
+	case ThingDescription:
+		data = cDescription
+	case ThingLength:
+		data = cLength
+	case ThingHeight:
+		data = cHeight
+
 	default:
 		return nil, fmt.Errorf("Unable to marshal `%v` in to bytes", s)
 	}
@@ -68,46 +90,54 @@ func (s {{.TypeName}}Field) MarshalText() ([]byte, error) {
 }
 
 // UnmarshalText implements https://golang.org/pkg/encoding/#TextUnmarshaler
-func (s *{{.TypeName}}Field) UnmarshalText(b []byte) error {
+func (s *ThingField) UnmarshalText(b []byte) error {
 	str := strings.Trim(string(b), `"`)
 
 	switch str {
-	{{range $i, $x := .SearchableFields}}case c{{$x.Name}}:
-		*s = {{$typeName}}{{$x.Name}}
-	{{end}}
+	case cID:
+		*s = ThingID
+	case cColor:
+		*s = ThingColor
+	case cDescription:
+		*s = ThingDescription
+	case cLength:
+		*s = ThingLength
+	case cHeight:
+		*s = ThingHeight
+
 	default:
-		return fmt.Errorf("Unable to marshal '%s' into type {{.TypeName}}Field", str)
+		return fmt.Errorf("Unable to marshal '%s' into type ThingField", str)
 	}
 	return nil
 }
 
-// {{.TypeName}}Filter is a filter specific to {{.TypeName}}
-type {{.TypeName}}Filter struct {
-	Field {{.TypeName}}Field `json:"field"`
-	Value interface{} `json:"value"`
-	Operator Operator `json:"operator"`
-	Condition Condition `json:"condition"`
+// ThingFilter is a filter specific to Thing
+type ThingFilter struct {
+	Field     ThingField  `json:"field"`
+	Value     interface{} `json:"value"`
+	Operator  Operator    `json:"operator"`
+	Condition Condition   `json:"condition"`
 }
 
-// {{.TypeName}}OrderBy is a sort directive that is specific to {{.TypeName}}
-type {{.TypeName}}OrderBy struct {
-	Field {{.TypeName}}Field `json:"field"`
-	IsDescending bool `json:"isDescending"`
+// ThingOrderBy is a sort directive that is specific to Thing
+type ThingOrderBy struct {
+	Field        ThingField `json:"field"`
+	IsDescending bool       `json:"isDescending"`
 }
 
 // AddFilter is a helper method to add a filter to a SearchRequest.  By default,
 // the operator is EQ and the condition is AND.  If you want to override that:
 //
 //  var sr SearchRequest
-//  sr.AddFilter("color", "red", func(f *{{.TypeName}}Filter){
+//  sr.AddFilter("color", "red", func(f *ThingFilter){
 //    f.Operator = GT
 //    f.Condition = OR
 //  })
 //
 // and you're all set.
-func (sr *{{.TypeName}}SearchRequest) AddFilter(field {{.TypeName}}Field, value interface{}, cfg ...func(f *{{.TypeName}}Filter)) *{{.TypeName}}SearchRequest {
-	f := {{.TypeName}}Filter{
-		Field: field,
+func (sr *ThingSearchRequest) AddFilter(field ThingField, value interface{}, cfg ...func(f *ThingFilter)) *ThingSearchRequest {
+	f := ThingFilter{
+		Field:     field,
 		Operator:  Eq,
 		Condition: And,
 		Value:     fmt.Sprint(value),
@@ -123,37 +153,37 @@ func (sr *{{.TypeName}}SearchRequest) AddFilter(field {{.TypeName}}Field, value 
 }
 
 // AddFields adds fields to the select.  Helper method for chain building a
-// {{.TypeName}}SearchRequest.
-func (sr *{{.TypeName}}SearchRequest) AddFields(fields ...{{.TypeName}}Field) *{{.TypeName}}SearchRequest {
+// ThingSearchRequest.
+func (sr *ThingSearchRequest) AddFields(fields ...ThingField) *ThingSearchRequest {
 	sr.Fields = append(sr.Fields, fields...)
 
 	return sr
 }
 
-// SetLimit sets the Limit.  Helper method for chain building a {{.TypeName}}SearchRequest
-func (sr *{{.TypeName}}SearchRequest) SetLimit(limit int) *{{.TypeName}}SearchRequest {
+// SetLimit sets the Limit.  Helper method for chain building a ThingSearchRequest
+func (sr *ThingSearchRequest) SetLimit(limit int) *ThingSearchRequest {
 	sr.Limit = limit
 
 	return sr
 }
 
-// SetOffset sets the Offset.  Helper method for chain building a {{.TypeName}}SearchRequest
-func (sr *{{.TypeName}}SearchRequest) SetOffset(offset int) *{{.TypeName}}SearchRequest {
+// SetOffset sets the Offset.  Helper method for chain building a ThingSearchRequest
+func (sr *ThingSearchRequest) SetOffset(offset int) *ThingSearchRequest {
 	sr.Offset = offset
 
 	return sr
 }
 
 // SetPage sets the Offset and Limit based on the page number and page size.
-func (sr *{{.TypeName}}SearchRequest) SetPage(pageNumber, pageSize int) *{{.TypeName}}SearchRequest {
+func (sr *ThingSearchRequest) SetPage(pageNumber, pageSize int) *ThingSearchRequest {
 	return sr.
 		SetOffset(pageNumber * pageSize).
 		SetLimit(pageSize)
 }
 
 // SetOrderBy sets the Order By.  Helper method for chain building a SearchRequest
-func (sr *{{.TypeName}}SearchRequest) SetOrderBy(field {{.TypeName}}Field, isDescending bool) *{{.TypeName}}SearchRequest {
-	sr.OrderBy = &{{.TypeName}}OrderBy{
+func (sr *ThingSearchRequest) SetOrderBy(field ThingField, isDescending bool) *ThingSearchRequest {
+	sr.OrderBy = &ThingOrderBy{
 		Field:        field,
 		IsDescending: isDescending,
 	}
@@ -163,7 +193,7 @@ func (sr *{{.TypeName}}SearchRequest) SetOrderBy(field {{.TypeName}}Field, isDes
 
 // GenerateSelectSQL will generate an executable SQL statement and return the SQL
 // string (with placeholders) and a slice of the values.
-func (sr *{{.TypeName}}SearchRequest) GenerateSelectSQL() (string, []interface{}, error) {
+func (sr *ThingSearchRequest) GenerateSelectSQL() (string, []interface{}, error) {
 	var s string
 
 	if len(sr.Fields) == 0 {
@@ -178,7 +208,7 @@ func (sr *{{.TypeName}}SearchRequest) GenerateSelectSQL() (string, []interface{}
 	psql := sq.StatementBuilder.
 		PlaceholderFormat(sq.Dollar).
 		Select(s).
-		From("{{.TableName}}")
+		From("things")
 
 	sr.addPredicates(&psql)
 
@@ -207,18 +237,18 @@ func (sr *{{.TypeName}}SearchRequest) GenerateSelectSQL() (string, []interface{}
 
 // GenerateCountSQL will generate an executable SQL statement and return the SQL
 // string (with placeholders) and a slice of the values.
-func (sr *{{.TypeName}}SearchRequest) GenerateCountSQL() (string, []interface{}, error) {
+func (sr *ThingSearchRequest) GenerateCountSQL() (string, []interface{}, error) {
 	psql := sq.StatementBuilder.
 		PlaceholderFormat(sq.Dollar).
 		Select("COUNT(*) AS cnt").
-		From("{{.TableName}}")
+		From("things")
 
 	sr.addPredicates(&psql)
 
 	return psql.ToSql()
 }
 
-func (sr *{{.TypeName}}SearchRequest) addPredicates(psql *sq.SelectBuilder) {
+func (sr *ThingSearchRequest) addPredicates(psql *sq.SelectBuilder) {
 	var ands sq.And
 	var ors sq.Or
 
@@ -245,7 +275,7 @@ func (sr *{{.TypeName}}SearchRequest) addPredicates(psql *sq.SelectBuilder) {
 	}
 }
 
-func (sr {{.TypeName}}SearchRequest) buildExpr(f {{.TypeName}}Filter) string {
+func (sr ThingSearchRequest) buildExpr(f ThingFilter) string {
 	var operator string
 
 	switch f.Operator {
@@ -277,7 +307,7 @@ func (sr {{.TypeName}}SearchRequest) buildExpr(f {{.TypeName}}Filter) string {
 }
 
 // ExecuteSearch will take a sql.DB connection and execute this search request
-func (sr *{{.TypeName}}SearchRequest) ExecuteSearch(db *sql.DB, results *[]searchType.{{.TypeName}}) error {
+func (sr *ThingSearchRequest) ExecuteSearch(db *sql.DB, results *[]Thing) error {
 	// Generate the SQL
 	sqlStr, values, err := sr.GenerateSelectSQL()
 
@@ -292,7 +322,7 @@ func (sr *{{.TypeName}}SearchRequest) ExecuteSearch(db *sql.DB, results *[]searc
 }
 
 // ExecuteCount will take a sql.DB connection and execute a SELECT COUNT
-func (sr *{{.TypeName}}SearchRequest) ExecuteCount(db *sql.DB) (int32, error) {
+func (sr *ThingSearchRequest) ExecuteCount(db *sql.DB) (int32, error) {
 	// Generate the SQL
 	sqlStr, values, err := sr.GenerateCountSQL()
 
@@ -316,11 +346,11 @@ func (sr *{{.TypeName}}SearchRequest) ExecuteCount(db *sql.DB) (int32, error) {
 	return results[0].Count, nil
 }
 
-// New{{.TypeName}}SearchHandlerFunc returns an HTTP handler func for
-// {{.TypeName}}SearchRequests. It returns 200 and the results
+// NewThingSearchHandlerFunc returns an HTTP handler func for
+// ThingSearchRequests. It returns 200 and the results
 // on success, 404 if not a POST, 400 on bad JSON, 500 on any
 // other error.
-func New{{.TypeName}}SearchHandlerFunc(db *sql.DB) http.HandlerFunc {
+func NewThingSearchHandlerFunc(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			w.WriteHeader(http.StatusNotFound)
@@ -335,7 +365,7 @@ func New{{.TypeName}}SearchHandlerFunc(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		var sr {{.TypeName}}SearchRequest
+		var sr ThingSearchRequest
 		err = json.Unmarshal(b, &sr)
 
 		if err != nil {
@@ -344,7 +374,7 @@ func New{{.TypeName}}SearchHandlerFunc(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		var results []searchType.{{.TypeName}}
+		var results []Thing
 		err = sr.ExecuteSearch(db, &results)
 
 		if err != nil {

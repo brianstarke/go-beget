@@ -1,10 +1,8 @@
-package types
+package example
 
 //go:generate searcher -struct=Thing -table=things
-//go:generate creator -struct=Thing -table=things -impls=sql,gin
-//go:generate updater -struct=Thing -table=things -impls=sql,gin
 
-// Thing has characteristics
+// Thing is a normal thing
 type Thing struct {
 	ID          int64  `beget:"search" json:"id" db:"id"`
 	Color       string `beget:"search,create,update" json:"color" db:"color"`

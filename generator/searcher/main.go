@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 
-	"go/build"
 	"go/format"
 
 	"io/ioutil"
@@ -67,8 +66,6 @@ func main() {
 
 	log.Printf("Generating searcher for %s", ansi.Color(*structName, "155+b"))
 
-	pkg, _ := build.Default.ImportDir("../", 0)
-
 	data, err := generator.GatherStructData(*structName)
 
 	if err != nil {
@@ -78,8 +75,10 @@ func main() {
 	// pull out the searchable fields
 	searchableFields := gatherSearchableFields(data.Fields)
 
+	pathParts := strings.Split(data.PkgImportPath, "/")
+
 	tmplData := TemplateData{
-		PackageName:      pkg.Name,
+		PackageName:      pathParts[len(pathParts)-1],
 		TypeImport:       data.PkgImportPath,
 		SearchImport:     strings.Replace(data.PkgImportPath, "/types", "/search", 1),
 		TypeName:         data.Name,
@@ -87,7 +86,6 @@ func main() {
 		SearchableFields: searchableFields,
 	}
 
-	createSearchDirectory()
 	createSearcher(tmplData)
 }
 
@@ -139,18 +137,18 @@ func gatherSearchableFields(fields []generator.Field) []SearchableField {
 	return searchableFields
 }
 
-func createSearcherEnums() {
-	if _, err := os.Stat("../search/searchEnums.go"); !os.IsNotExist(err) {
+func createSearcherEnums(tmplData TemplateData) {
+	if _, err := os.Stat("../searchRequestEnums.go"); !os.IsNotExist(err) {
 		return
 	}
 
-	t, err := templates.Asset("templates/searcher_enums.tmpl")
+	t, err := templates.Asset("templates/searchRequestEnums.tmpl")
 
 	if err != nil {
 		panic(err)
 	}
 
-	searchRequestTmpl, err := template.New("searcher_enums").Parse(string(t))
+	searchRequestTmpl, err := template.New("searchRequestEnums").Parse(string(t))
 
 	if err != nil {
 		panic(err)
@@ -159,7 +157,7 @@ func createSearcherEnums() {
 	b := []byte{}
 	buf := bytes.NewBuffer(b)
 
-	err = searchRequestTmpl.Execute(buf, nil)
+	err = searchRequestTmpl.Execute(buf, tmplData)
 
 	if err != nil {
 		panic(err)
@@ -171,20 +169,20 @@ func createSearcherEnums() {
 		panic(err)
 	}
 
-	output := fmt.Sprintf("../search/searcherEnums.go")
+	output := fmt.Sprintf("searchRequestEnums.go")
 	err = ioutil.WriteFile(output, outputBytes, 0644)
 
 	if err != nil {
 		panic(err)
 	}
 
-	log.Printf("Generated search_enums [%s]", ansi.Color(output, "155+b"))
+	log.Printf("Generated searchRequestEnums [%s]", ansi.Color(output, "155+b"))
 }
 
 func createSearcher(tmplData TemplateData) {
-	createSearcherEnums()
+	createSearcherEnums(tmplData)
 
-	t, err := templates.Asset("templates/searcher.tmpl")
+	t, err := templates.Asset("templates/searchRequest.tmpl")
 
 	tmpl, err := template.New("searcher").Parse(string(t))
 
@@ -207,22 +205,12 @@ func createSearcher(tmplData TemplateData) {
 		log.Fatal(err)
 	}
 
-	output := fmt.Sprintf("../search/%sSearcher.go", strings.ToLower(tmplData.TypeName))
+	output := fmt.Sprintf("%sSearchRequest.go", strings.ToLower(tmplData.TypeName))
 	err = ioutil.WriteFile(output, outputBytes, 0644)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("Searcher generated [%s]", ansi.Color(output, "155+b"))
-}
-
-func createSearchDirectory() error {
-	if _, err := os.Stat("../search"); os.IsNotExist(err) {
-		log.Printf("%s does not exist, I'll create it", ansi.Color("../search", "155+b"))
-
-		os.Mkdir("../search", 0777)
-	}
-
-	return nil
+	log.Printf("SearchRequest generated [%s]", ansi.Color(output, "155+b"))
 }

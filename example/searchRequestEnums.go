@@ -1,4 +1,4 @@
-package search
+package example
 
 // GENERATED CODE, EDITS WILL BE LOST
 //
