@@ -108,8 +108,8 @@ type {{.TypeName}}OrderBy struct {
 func (sr *{{.TypeName}}SearchRequest) AddFilter(field {{.TypeName}}Field, value interface{}, cfg ...func(f *{{.TypeName}}Filter)) *{{.TypeName}}SearchRequest {
 	f := {{.TypeName}}Filter{
 		Field: field,
-		Operator:  EQ,
-		Condition: AND,
+		Operator:  Eq,
+		Condition: And,
 		Value:     fmt.Sprint(value),
 	}
 
@@ -225,11 +225,11 @@ func (sr *{{.TypeName}}SearchRequest) addPredicates(psql *sq.SelectBuilder) {
 	for _, f := range sr.Filters {
 		e := sq.Expr(sr.buildExpr(f), f.Value)
 
-		if f.Operator == NULL || f.Operator == NOT_NULL {
+		if f.Operator == IsNull || f.Operator == NotNull {
 			e = sq.Expr(sr.buildExpr(f))
 		}
 
-		if f.Condition == OR {
+		if f.Condition == Or {
 			ors = append(ors, e)
 		} else {
 			ands = append(ands, e)
@@ -249,25 +249,25 @@ func (sr {{.TypeName}}SearchRequest) buildExpr(f {{.TypeName}}Filter) string {
 	var operator string
 
 	switch f.Operator {
-	case EQ:
+	case Eq:
 		operator = "="
-	case NEQ:
+	case NotEq:
 		operator = "!="
-	case LIKE:
+	case Like:
 		return fmt.Sprintf("cast (%s as varchar(64)) ILIKE ?", f.Field)
-	case NLIKE:
+	case NotLike:
 		return fmt.Sprintf("cast (%s as varchar(64)) NOT ILIKE ?", f.Field)
-	case GT:
+	case GreaterThan:
 		operator = ">"
-	case GTE:
+	case GreaterThanOrEq:
 		operator = ">="
-	case LT:
+	case LesserThan:
 		operator = "<"
-	case LTE:
+	case LesserThanOrEq:
 		operator = "<="
-	case NULL:
+	case IsNull:
 		return fmt.Sprintf("%s IS NULL", f.Field)
-	case NOT_NULL:
+	case NotNull:
 		return fmt.Sprintf("%s IS NOT NULL", f.Field)
 	default:
 		operator = "="
