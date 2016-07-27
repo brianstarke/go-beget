@@ -2,7 +2,7 @@ package example
 
 // GENERATED CODE, EDITS WILL BE LOST
 //
-// generated from Thing in github.com/brianstarke/go-beget/example
+// generated from example/Thing
 // using http://github.com/brianstarke/go-beget/generator/searcher
 
 import (

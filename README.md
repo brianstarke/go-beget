@@ -9,7 +9,7 @@ The intent is not to create an ORM, but rather provide a forkable baseline to he
 
 ### The basics
 
-Add `beget` tags to a struct for which you want to create `SearchRequests` for and add the `go:generate` comment.
+Add the `go:generate` comment and tag all fields with `db` and `json` tags.
 
 `struct` is the struct you want the `go-beget` generator to look at, `table` is the name of the database table to be used in SQL statement generation.
 
@@ -28,15 +28,15 @@ package types
 
 // Thing has characteristics
 type Thing struct {
-	ID          int64  `beget:"search" json:"id" db:"id"`
-	Color       string `beget:"search,create" json:"color" db:"color"`
-	Description string `beget:"search,create" json:"description" db:"description"`
-	Length      int    `beget:"search,create,update" json:"length" db:"length"`
-	Height      int    `beget:"search,create,update" json:"height" db:"height"`
+	ID          int64  `json:"id" db:"id"`
+	Color       string `json:"color" db:"color"`
+	Description string `json:"description" db:"description"`
+	Length      int    `json:"length" db:"length"`
+	Height      int    `json:"height" db:"height"`
 }
 ```
 
-NOTE: For now, `go-beget` expects that you keep your types in some other package and will generate it's code into a directory called `search` (or `update` or `create`) as a peer of wherever the type is.
+For now, `go-beget` will generate it's code into the same package and directory as the one your struct is in.
 
 Run `go generate ./...`
 
@@ -206,5 +206,4 @@ Then `./rebuild_templates.sh` from the root of this project.
 - make all generated code pass golint
 - break dependency on sqlx?
 - generate deleters?
-- add fake/mock implementations for testing
-- support XML?
+- add fake/mock implementations for testing?
