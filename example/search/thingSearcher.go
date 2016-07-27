@@ -2,7 +2,7 @@ package search
 
 // GENERATED CODE, EDITS WILL BE LOST
 //
-// generated from Thing
+// generated from Thing in github.com/brianstarke/go-beget/example/types
 // using http://github.com/brianstarke/go-beget/generator/searcher
 
 import (
