@@ -1,4 +1,4 @@
-package generator
+package main
 
 import (
 	"fmt"
@@ -34,18 +34,18 @@ requests like
 		Bang
 	)
 */
-type StructData struct {
-	Name          string    // the name of the struct we're looking for
-	PkgImportPath string    // the import path for this type
-	File          *ast.File // parsed file containing our struct def
-	Fields        []Field   // the fields def
+type structData struct {
+	Name          string        // the name of the struct we're looking for
+	PkgImportPath string        // the import path for this type
+	File          *ast.File     // parsed file containing our struct def
+	Fields        []structField // the fields def
 }
 
 /*
 Field contains the parsed metadata about a struct field, like it's Name
 and a map of it's Tags.
 */
-type Field struct {
+type structField struct {
 	Name string            // name of the field
 	Tags map[string]string // tags on the field
 }
@@ -55,7 +55,7 @@ GatherStructData finds the correct file containing the struct in question,
 parses out the pertinents, and then returns the struct data to be used for
 generating files.
 */
-func GatherStructData(structName string) (*StructData, error) {
+func gatherStructData(structName string) (*structData, error) {
 	file, err := findFile(structName)
 
 	if err != nil {
@@ -70,7 +70,7 @@ func GatherStructData(structName string) (*StructData, error) {
 
 	fields := parseStructFields(file, structName)
 
-	structData := &StructData{
+	structData := &structData{
 		Name:          structName,
 		PkgImportPath: importPath,
 		File:          file,
@@ -166,9 +166,9 @@ func getImportPath() (string, error) {
 /*
 Parses the fields from the specified type
 */
-func parseStructFields(file *ast.File, structName string) []Field {
+func parseStructFields(file *ast.File, structName string) []structField {
 	var withinStruct bool
-	var fields []Field
+	var fields []structField
 
 	ast.Inspect(file, func(n ast.Node) bool {
 		switch t := n.(type) {
@@ -191,7 +191,7 @@ func parseStructFields(file *ast.File, structName string) []Field {
 					return true
 				}
 
-				fields = append(fields, Field{
+				fields = append(fields, structField{
 					Name: field.Names[0].String(),
 					Tags: parseTags(field.Tag.Value),
 				})

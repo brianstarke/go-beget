@@ -3,14 +3,13 @@ package main
 import (
 	"testing"
 
-	"github.com/brianstarke/go-beget/generator"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGatherFields(t *testing.T) {
 	assert := assert.New(t)
 
-	fields := []generator.Field{
+	fields := []structField{
 		{
 			Name: "Foo",
 			Tags: map[string]string{

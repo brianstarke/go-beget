@@ -13,7 +13,6 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/brianstarke/go-beget/generator"
 	"github.com/brianstarke/go-beget/templates"
 	"github.com/mgutz/ansi"
 )
@@ -25,7 +24,7 @@ var (
 	logPrefix = "[" +
 		ansi.Color("go-beget", "154") +
 		"/" +
-		ansi.Color("searcher", "159") + "] "
+		ansi.Color("generator", "159") + "] "
 )
 
 /*
@@ -64,7 +63,7 @@ func main() {
 
 	log.Printf("Generating searcher for %s", ansi.Color(*structName, "155+b"))
 
-	data, err := generator.GatherStructData(*structName)
+	data, err := gatherStructData(*structName)
 
 	if err != nil {
 		log.Fatalf("Failed getting struct data for %s: %s", *structName, err.Error())
@@ -85,7 +84,7 @@ func main() {
 	createSearcher(tmplData)
 }
 
-func gatherFields(f []generator.Field) []Field {
+func gatherFields(f []structField) []Field {
 	var fields []Field
 
 	for _, field := range f {
@@ -125,17 +124,17 @@ func gatherFields(f []generator.Field) []Field {
 }
 
 func createSearcherEnums(tmplData TemplateData) {
-	if _, err := os.Stat("../searchRequestEnums.go"); !os.IsNotExist(err) {
+	if _, err := os.Stat("../searchEnums.go"); !os.IsNotExist(err) {
 		return
 	}
 
-	t, err := templates.Asset("templates/searchRequestEnums.tmpl")
+	t, err := templates.Asset("templates/searchEnums.tmpl")
 
 	if err != nil {
 		panic(err)
 	}
 
-	searchRequestTmpl, err := template.New("searchRequestEnums").Parse(string(t))
+	searchRequestTmpl, err := template.New("searchEnums").Parse(string(t))
 
 	if err != nil {
 		panic(err)
@@ -156,7 +155,7 @@ func createSearcherEnums(tmplData TemplateData) {
 		panic(err)
 	}
 
-	output := fmt.Sprintf("searchRequestEnums.go")
+	output := fmt.Sprintf("searchEnums.go")
 	err = ioutil.WriteFile(output, outputBytes, 0644)
 
 	if err != nil {
@@ -200,4 +199,76 @@ func createSearcher(tmplData TemplateData) {
 	}
 
 	log.Printf("SearchRequest generated [%s]", ansi.Color(output, "155+b"))
+}
+
+func createCreate(tmplData TemplateData) {
+	t, err := templates.Asset("templates/create.tmpl")
+
+	tmpl, err := template.New("create").Parse(string(t))
+
+	if err != nil {
+		panic(err)
+	}
+
+	b := []byte{}
+	buf := bytes.NewBuffer(b)
+
+	err = tmpl.Execute(buf, tmplData)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	outputBytes, err := format.Source(buf.Bytes())
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	output := fmt.Sprintf("%sCreate.go", strings.ToLower(tmplData.TypeName))
+	err = ioutil.WriteFile(output, outputBytes, 0644)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("Creator generated %s", ansi.Color(output, "155+b"))
+}
+
+func createUpdateRequest(tmplData TemplateData) {
+	t, err := templates.Asset("templates/update.tmpl")
+
+	if err != nil {
+		panic(err)
+	}
+
+	updateRequestTmpl, err := template.New("update").Parse(string(t))
+
+	if err != nil {
+		panic(err)
+	}
+
+	b := []byte{}
+	buf := bytes.NewBuffer(b)
+
+	err = updateRequestTmpl.Execute(buf, tmplData)
+
+	if err != nil {
+		panic(err)
+	}
+
+	outputBytes, err := format.Source(buf.Bytes())
+
+	if err != nil {
+		panic(err)
+	}
+
+	output := fmt.Sprintf("%sUpdateRequest.go", strings.ToLower(tmplData.TypeName))
+	err = ioutil.WriteFile(output, outputBytes, 0644)
+
+	if err != nil {
+		panic(err)
+	}
+
+	log.Printf("UpdateRequest generated %s", ansi.Color(output, "155+b"))
 }

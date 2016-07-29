@@ -1,6 +1,6 @@
 package example
 
-//go:generate searcher -struct=Thing -table=things
+//go:generate beget -struct=Thing -table=things
 
 // Thing is a normal thing
 type Thing struct {

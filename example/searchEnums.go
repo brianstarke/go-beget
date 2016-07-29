@@ -1,8 +1,9 @@
-package {{.PackageName}}
+package example
 
 // GENERATED CODE, EDITS WILL BE LOST
 //
-// using http://github.com/brianstarke/go-beget/generator/searcher
+// generated from example/Thing
+// using http://github.com/brianstarke/go-beget/beget
 
 import (
 	"fmt"
