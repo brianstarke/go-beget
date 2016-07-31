@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm example/search.generated.go
+#rm example/search.generated.go
 rm example/thingFields.generated.go
 rm example/thingSearch.generated.go
 rm example/thingCreate.generated.go

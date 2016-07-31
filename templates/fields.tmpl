@@ -22,7 +22,7 @@ const ({{$typeName := .TypeName}}
 
 // JSON name constants
 const ({{$typeName := .TypeName}}
-{{range $i, $x := .Fields}}c{{$x.Name}} string = "{{$x.JSONName}}"
+{{range $i, $x := .Fields}}c{{$typeName}}{{$x.Name}} string = "{{$x.JSONName}}"
 {{end}})
 
 // DbFieldName returns the name of the field to use in the SQL query
@@ -41,7 +41,7 @@ func (s {{.TypeName}}Field) MarshalText() ([]byte, error) {
 
 	switch s {
 	{{range $i, $x := .Fields}}case {{$typeName}}{{$x.Name}}:
-		data = c{{$x.Name}}
+		data = c{{$typeName}}{{$x.Name}}
 	{{end}}
 	default:
 		return nil, fmt.Errorf("Unable to marshal `%v` in to bytes", s)
@@ -54,7 +54,7 @@ func (s *{{.TypeName}}Field) UnmarshalText(b []byte) error {
 	str := strings.Trim(string(b), `"`)
 
 	switch str {
-	{{range $i, $x := .Fields}}case c{{$x.Name}}:
+	{{range $i, $x := .Fields}}case c{{$typeName}}{{$x.Name}}:
 		*s = {{$typeName}}{{$x.Name}}
 	{{end}}
 	default:

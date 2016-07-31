@@ -26,12 +26,12 @@ const (
 
 // JSON name constants
 const (
-	cID          string = "id"
-	cColor       string = "color"
-	cDescription string = "description"
-	cLength      string = "length"
-	cHeight      string = "height"
-	cCreatedAt   string = "createdAt"
+	cThingID          string = "id"
+	cThingColor       string = "color"
+	cThingDescription string = "description"
+	cThingLength      string = "length"
+	cThingHeight      string = "height"
+	cThingCreatedAt   string = "createdAt"
 )
 
 // DbFieldName returns the name of the field to use in the SQL query
@@ -60,17 +60,17 @@ func (s ThingField) MarshalText() ([]byte, error) {
 
 	switch s {
 	case ThingID:
-		data = cID
+		data = cThingID
 	case ThingColor:
-		data = cColor
+		data = cThingColor
 	case ThingDescription:
-		data = cDescription
+		data = cThingDescription
 	case ThingLength:
-		data = cLength
+		data = cThingLength
 	case ThingHeight:
-		data = cHeight
+		data = cThingHeight
 	case ThingCreatedAt:
-		data = cCreatedAt
+		data = cThingCreatedAt
 
 	default:
 		return nil, fmt.Errorf("Unable to marshal `%v` in to bytes", s)
@@ -83,17 +83,17 @@ func (s *ThingField) UnmarshalText(b []byte) error {
 	str := strings.Trim(string(b), `"`)
 
 	switch str {
-	case cID:
+	case cThingID:
 		*s = ThingID
-	case cColor:
+	case cThingColor:
 		*s = ThingColor
-	case cDescription:
+	case cThingDescription:
 		*s = ThingDescription
-	case cLength:
+	case cThingLength:
 		*s = ThingLength
-	case cHeight:
+	case cThingHeight:
 		*s = ThingHeight
-	case cCreatedAt:
+	case cThingCreatedAt:
 		*s = ThingCreatedAt
 
 	default:

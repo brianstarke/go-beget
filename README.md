@@ -68,7 +68,9 @@ func main() {
 	sr.
 		AddFields(example.ThingColor, example.ThingHeight).
 		AddFilter(example.ThingColor, "red", func(f *example.ThingFilter) {
-			f.Operator = example.Eq
+			f.Condition = example.Or
+		}).
+		AddFilter(example.ThingColor, "blue", func(f *example.ThingFilter) {
 			f.Condition = example.Or
 		}).
 		SetOrderBy(example.ThingHeight, false).
@@ -97,7 +99,13 @@ Would output:
       "field": "color",
       "value": "red",
       "operator": "eq",
-      "condition": "OR"
+      "condition": "or"
+    },
+		{
+      "field": "color",
+      "value": "blue",
+      "operator": "eq",
+      "condition": "or"
     }
   ],
   "orderBy": {
@@ -110,48 +118,46 @@ Would output:
 2016/07/31 17:00:39 SELECT color, height FROM things WHERE (color = $1) ORDER BY height LIMIT 10
 ```
 
-### Using SQLSearchers
+By default, `AddFilter` will use Eq (Equals) as an operator and And as a condition, if you want to override those - you can pass in functions to modify the options (H/T to [Dave Cheney](http://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis http://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis))
 
-You can use a generated **SearchRequests** to execute a search for multiple results.
+e.g:
 
 ```go
-// construct the search request
-var sr search.ThingSearchRequest
+var sr example.MahSearchRequest
 
-sr.
-	AddFilter(search.ThingColor, "red").
-	SetOrderBy(search.ThingHeight, false).
-	SetLimit(10).
-	SetOffset(10)
+sr.AddFilter(example.MahSticks, 4) // == And 'sticks' Eq 4
 
-// run the search request (where db is a working *sql.DB instance)
-var results []type.Thing
-err := sr.ExecuteSearch(db, &results)
-// do things with results, check error etc...
+sr.AddFilter(example.MahStones, 80, func(f *example.MahFilter) {
+	f.Operator = example.GreaterThan
+}) // == And 'stones' Gt 80
 
-// or get a count of all results...
-count, err := sr.ExecuteCount(db)
+sr.AddFilter(example.MahMarbles, 22, func(f *example.MahFilter) {
+	f.Condition = example.Or
+	f.Operator = example.LesserThanOrEq
+}) // == Or 'marbles' Lte 22
 
-// or pull a single result by ID
-// TODO generate that
+sr.AddFilter(example.MahMarbles, 12, func(f *example.MahFilter) {
+	f.Condition = example.Or
+	f.Operator = example.GreaterThanOrEq
+}) // Or 'marbles' Gte 12
+```
+
+Would result in
+
+```sql
+SELECT * FROM mah_things WHERE (marbles <= $1 OR marbles >= $2) AND (sticks = $3 AND stones > $4)
 ```
 
 ### Using HTTP handlers (totally optional)
 
-`beget` also generates HTTP handlers, you can wire them up in your routes like so:
+`go-beget` also generates HTTP handlers, you can wire them up in your routes like so:
 
 ```go
 func main() {
-  http.HandleFunc("/", search.NewThingSearchHandlerFunc(db))
+  http.HandleFunc("/create", search.NewThingCreateHandlerFunc(db))
+  http.HandleFunc("/search", search.NewThingSearchHandlerFunc(db))
+  http.HandleFunc("/update", search.NewThingUpdateHandlerFunc(db))
   http.ListenAndServe(":8080", nil)
-}
-```
-
-The generated routes expect JSON and return JSON.  On error, they return status code **500** and the error in a JSON struct like this:
-
-```javascript
-{
-	"error": "Your error here"
 }
 ```
 
@@ -164,14 +170,14 @@ On success they return **200** and the result as JSON.
     "filters":[{
       "field": "color",
       "value": "RED",
-      "operator": "EQ",
-      "condition": "AND"
+      "operator": "eq",
+      "condition": "and"
     },
 		{
 			"field": "size",
 			"value": 13,
-			"operator": "GT",
-			"condition": "AND"
+			"operator": "gt",
+			"condition": "and"
 		}],
     "fields": ["height", "type"],
     "orderBy": {
@@ -183,9 +189,9 @@ On success they return **200** and the result as JSON.
 }
 ```
 
-*TODO document the creator usage*
+*TODO document create usage*
 
-*TODO document the updater usage*
+*TODO document update usage*
 
 ### Generator templates
 
@@ -197,6 +203,8 @@ Then `./rebuild_templates.sh` from the root of this project.
 
 ### TODO
 
+- add getByID function
+- make ID field configurable
 - make all generated code pass golint
 - break dependency on sqlx?
 - generate deleters?

@@ -105,7 +105,7 @@ func (o *Operator) UnmarshalText(b []byte) error {
 func (c Condition) MarshalText() ([]byte, error) {
 	var data string
 
-	switch o {
+	switch c {
 	case And:
 		data = "and"
 	case Or:

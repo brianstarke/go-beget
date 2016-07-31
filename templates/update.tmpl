@@ -31,7 +31,7 @@ func (u *{{.TypeName}}UpdateRequest) New{{.TypeName}}UpdateRequest(id int64) *{{
 }
 
 // AddUpdate is a convenience method for adding updates to this request.  Chainable.
-func (u *{{.TypeName}}UpdateRequest) AddUpdate(field ThingField, value interface{}) *{{.TypeName}}UpdateRequest {
+func (u *{{.TypeName}}UpdateRequest) AddUpdate(field {{.TypeName}}Field, value interface{}) *{{.TypeName}}UpdateRequest {
 	u.Updates[field] = value
 
 	return u
