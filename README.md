@@ -88,7 +88,7 @@ func main() {
 
 Would output:
 
-```
+```json
 {
   "fields": [
     "color",
@@ -115,6 +115,8 @@ Would output:
   "limit": 10,
   "offset": 0
 }
+```
+```sql
 SELECT color, height FROM things WHERE (color = $1 OR color = $2) ORDER BY height LIMIT 10
 ```
 
