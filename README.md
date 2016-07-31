@@ -11,7 +11,7 @@ The intent is not to create an ORM, but rather provide a forkable baseline to he
 
 Install `beget` by running `go get -u github.com/brianstarke/go-beget`
 
-Add the `go:generate beget` comment, tag all fields with `db` and `json` tags if you want something other than `ToLower`'d DB column names and JSON field names.
+Add the `go:generate go-beget` comment, tag all fields with `db` and `json` tags if you want something other than `ToLower`'d DB column names and JSON field names.
 
 `struct` is the struct you want the `go-beget` generator to look at, `table` is the name of the database table to be used in SQL statement generation/execution.
 
