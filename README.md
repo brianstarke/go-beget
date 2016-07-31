@@ -127,21 +127,21 @@ e.g:
 ```go
 var sr example.MahSearchRequest
 
-sr.AddFilter(example.MahSticks, 4) // == And 'sticks' Eq 4
+sr.AddFilter(example.MahSticks, 4) // And 'sticks' = 4
 
 sr.AddFilter(example.MahStones, 80, func(f *example.MahFilter) {
 	f.Operator = example.GreaterThan
-}) // == And 'stones' Gt 80
+}) // And 'stones' > 80
 
 sr.AddFilter(example.MahMarbles, 22, func(f *example.MahFilter) {
 	f.Condition = example.Or
 	f.Operator = example.LesserThanOrEq
-}) // == Or 'marbles' Lte 22
+}) // Or 'marbles' <= 22
 
 sr.AddFilter(example.MahMarbles, 12, func(f *example.MahFilter) {
 	f.Condition = example.Or
 	f.Operator = example.GreaterThanOrEq
-}) // Or 'marbles' Gte 12
+}) // Or 'marbles' >= 12
 ```
 
 Would result in
