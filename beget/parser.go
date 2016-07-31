@@ -35,19 +35,17 @@ requests like
 	)
 */
 type structData struct {
-	Name          string        // the name of the struct we're looking for
-	PkgImportPath string        // the import path for this type
-	File          *ast.File     // parsed file containing our struct def
-	Fields        []structField // the fields def
+	Name          string    // the name of the struct we're looking for
+	PkgImportPath string    // the import path for this type
+	File          *ast.File // parsed file containing our struct def
+	Fields        []Field   // the fields def
 }
 
-/*
-Field contains the parsed metadata about a struct field, like it's Name
-and a map of it's Tags.
-*/
-type structField struct {
-	Name string            // name of the field
-	Tags map[string]string // tags on the field
+// Field holds struct field metadata
+type Field struct {
+	Name     string // the name of the field in Go
+	DbName   string // the name of the field in the db
+	JSONName string // the name of the field in json
 }
 
 /*
@@ -166,9 +164,9 @@ func getImportPath() (string, error) {
 /*
 Parses the fields from the specified type
 */
-func parseStructFields(file *ast.File, structName string) []structField {
+func parseStructFields(file *ast.File, structName string) []Field {
 	var withinStruct bool
-	var fields []structField
+	var fields []Field
 
 	ast.Inspect(file, func(n ast.Node) bool {
 		switch t := n.(type) {
@@ -187,13 +185,16 @@ func parseStructFields(file *ast.File, structName string) []structField {
 			}
 
 			for _, field := range t.Fields.List {
-				if field.Tag == nil {
-					return true
+				var v string
+
+				if field.Tag != nil {
+					v = field.Tag.Value
 				}
 
-				fields = append(fields, structField{
-					Name: field.Names[0].String(),
-					Tags: parseTags(field.Tag.Value),
+				fields = append(fields, Field{
+					Name:     field.Names[0].String(),
+					DbName:   parseDbName(field.Names[0].String(), v),
+					JSONName: parseJSONName(field.Names[0].String(), v),
 				})
 			}
 		}
@@ -204,26 +205,36 @@ func parseStructFields(file *ast.File, structName string) []structField {
 	return fields
 }
 
-/*
-Parse a tag value, e.g.
+// TODO refactor these
 
-	`db:"first_name" json:"firstName"`
-
-in to a map, e.g.
-
-	["json"]{"firstName"}
-*/
-func parseTags(tagValue string) map[string]string {
-	tags := make(map[string]string)
-
-	if len(tagValue) == 0 {
-		return tags
-	}
-
+// parse the db field name out of the tag, if there's no db tag just
+// lowercase the fieldName
+func parseDbName(fieldName, tagValue string) string {
 	for _, t := range strings.Fields(strings.Replace(tagValue, "`", "", -1)) {
 		s := strings.Split(t, ":")
-		tags[s[0]] = strings.Replace(s[1], `"`, "", -1)
+
+		if s[0] == "db" {
+			v := strings.Replace(s[1], `"`, "", -1)
+			v = strings.Replace(v, ",", "", -1)
+			return strings.Replace(v, "omitempty", "", -1)
+		}
 	}
 
-	return tags
+	return strings.ToLower(fieldName)
+}
+
+// parse the db field name out of the tag, if there's no db tag just
+// lowercase the fieldName
+func parseJSONName(fieldName, tagValue string) string {
+	for _, t := range strings.Fields(strings.Replace(tagValue, "`", "", -1)) {
+		s := strings.Split(t, ":")
+
+		if s[0] == "json" {
+			v := strings.Replace(s[1], `"`, "", -1)
+			v = strings.Replace(v, ",", "", -1)
+			return strings.Replace(v, "omitempty", "", -1)
+		}
+	}
+
+	return strings.ToLower(fieldName)
 }

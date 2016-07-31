@@ -7,9 +7,9 @@ import (
 )
 
 type TestStruct struct {
-	One     string `db:"field_one" json:"fieldOne"`
-	Two     string `db:"field_two" json:"fieldTwo"`
-	Nothing string
+	One   string `db:"field_one" json:"fieldOne"`
+	Two   string `db:"field_two" json:"fieldTwo"`
+	Three string
 }
 
 func TestFindFile(t *testing.T) {
@@ -45,11 +45,17 @@ func TestParseStructFields(t *testing.T) {
 	fields := parseStructFields(f, "TestStruct")
 
 	assert.NoError(err, "should not error when parsing struct fields")
-	assert.Len(fields, 2)
+	assert.Len(fields, 3)
 
 	assert.Equal("One", fields[0].Name)
-	assert.Equal("fieldOne", fields[0].Tags["json"])
+	assert.Equal("fieldOne", fields[0].JSONName)
+	assert.Equal("field_one", fields[0].DbName)
 
 	assert.Equal("Two", fields[1].Name)
-	assert.Equal("field_two", fields[1].Tags["db"])
+	assert.Equal("fieldTwo", fields[1].JSONName)
+	assert.Equal("field_two", fields[1].DbName)
+
+	assert.Equal("Three", fields[2].Name)
+	assert.Equal("three", fields[2].JSONName)
+	assert.Equal("three", fields[2].DbName)
 }
