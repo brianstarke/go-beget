@@ -9,7 +9,7 @@ The intent is not to create an ORM, but rather provide a forkable baseline to he
 
 ## Getting started / Overview
 
-Install `beget` by running `go get -u github.com/brianstarke/go-beget/generator`
+Install `beget` by running `go get -u github.com/brianstarke/go-beget`
 
 Add the `go:generate beget` comment, tag all fields with `db` and `json` tags if you want something other than `ToLower`'d DB column names and JSON field names.
 
