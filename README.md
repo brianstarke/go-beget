@@ -9,30 +9,31 @@ The intent is not to create an ORM, but rather provide a forkable baseline to he
 
 ### The basics
 
-Add the `go:generate` comment and tag all fields with `db` and `json` tags.
+Install `beget` by running `go get -u github.com/brianstarke/go-beget/generator`
 
-`struct` is the struct you want the `go-beget` generator to look at, `table` is the name of the database table to be used in SQL statement generation.
+Add the `go:generate beget` comment, tag all fields with `db` and `json` tags if you want something other than `ToLower`'d DB column names and JSON field names.
 
-- _(currently, **sql** statement generation only works on PostgreSQL)_
+`struct` is the struct you want the `go-beget` generator to look at, `table` is the name of the database table to be used in SQL statement generation/execution.
+
+- _(currently, **sql** statement generation/execution only works on PostgreSQL)_
 
 Within the `beget` tag, add **search** to the fields you'd like to be searchable, **create** to the fields you'd like to be inserted by the generated **Creator** and **update** to the fields you want to allow to updated via an **Updater**.  
 
 Generally you'd leave the `ID` field without a **create** tag if your database is assigning the IDs.
 
 ```go
-package types
+package model
 
-//go:generate searcher -struct=Thing -table=things
-//go:generate creator -struct=Thing -table=things -impls=sql,gin
-//go:generate updater -struct=Thing -table=things -impls=sql,gin
+//go:generate beget -struct=Thing -table=things -omitFromInsert=Length,Height
 
-// Thing has characteristics
+// Thing is a normal thing
 type Thing struct {
-	ID          int64  `json:"id" db:"id"`
-	Color       string `json:"color" db:"color"`
-	Description string `json:"description" db:"description"`
-	Length      int    `json:"length" db:"length"`
-	Height      int    `json:"height" db:"height"`
+	ID          int64     `json:"id" db:"id"`
+	Color       string    `json:"color" db:"color"`
+	Description string    `json:"description" db:"description"`
+	Length      int       `json:"length" db:"length"`
+	Height      int       `json:"height" db:"height"`
+	CreatedAt   time.Time `json:"createdAt" db:"created_at_utc"`
 }
 ```
 
