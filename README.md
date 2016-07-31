@@ -89,7 +89,7 @@ func main() {
 Would output:
 
 ```
-2016/07/31 17:00:39 {
+{
   "fields": [
     "color",
     "height"
@@ -101,7 +101,7 @@ Would output:
       "operator": "eq",
       "condition": "or"
     },
-		{
+    {
       "field": "color",
       "value": "blue",
       "operator": "eq",
@@ -115,7 +115,7 @@ Would output:
   "limit": 10,
   "offset": 0
 }
-2016/07/31 17:00:39 SELECT color, height FROM things WHERE (color = $1) ORDER BY height LIMIT 10
+SELECT color, height FROM things WHERE (color = $1 OR color = $2) ORDER BY height LIMIT 10
 ```
 
 By default, `AddFilter` will use Eq (Equals) as an operator and And as a condition, if you want to override those - you can pass in functions to modify the options (H/T to [Dave Cheney](http://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis http://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis))
@@ -163,7 +163,7 @@ func main() {
 
 On success they return **200** and the result as JSON.
 
-## Sample JSON SearchRequest
+## Sample JSON SearchRequest for generated handler
 
 ```javascript
 {
