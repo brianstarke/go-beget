@@ -13,7 +13,7 @@ import (
 // Operator is an operator to be used in a SearchRequest filter
 type Operator int
 
-// Constants and their string counterparts (used in SQL generation)
+// Enum-like helpers for Operator
 const (
 	Eq Operator = iota
 	NotEq
@@ -25,6 +25,16 @@ const (
 	LesserThanOrEq
 	IsNull
 	NotNull
+)
+
+// Condition is an indicator of whether or not a filter should
+// be added as an AND or an OR to the search predicates
+type Condition int
+
+// Enum-like helpers for Condition
+const (
+	And Condition = iota
+	Or
 )
 
 // MarshalText implements https://golang.org/pkg/encoding/#TextMarshaler
@@ -91,12 +101,34 @@ func (o *Operator) UnmarshalText(b []byte) error {
 	return nil
 }
 
-// Condition is an indicator of whether or not a filter should
-// be added as an AND or an OR to the search predicates
-type Condition string
+// MarshalText implements https://golang.org/pkg/encoding/#TextMarshaler
+func (c Condition) MarshalText() ([]byte, error) {
+	var data string
 
-// Consts for your butt
-const (
-	And Condition = "AND"
-	Or            = "OR"
-)
+	switch o {
+	case And:
+		data = "and"
+	case Or:
+		data = "or"
+
+	default:
+		return nil, fmt.Errorf("Unable to marshal `%v` in to bytes", c)
+	}
+	return []byte(data), nil
+}
+
+// UnmarshalText implements https://golang.org/pkg/encoding/#TextUnmarshaler
+func (c *Condition) UnmarshalText(b []byte) error {
+	str := strings.Trim(string(b), `"`)
+
+	switch str {
+	case "and":
+		*c = And
+	case "or":
+		*c = Or
+
+	default:
+		return fmt.Errorf("Unable to marshal '%s' into type Condition", str)
+	}
+	return nil
+}

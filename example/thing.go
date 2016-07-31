@@ -2,7 +2,7 @@ package example
 
 import "time"
 
-//go:generate beget -struct=Thing -table=things -omitFromInsert=Length,Height
+//go:generate go-beget -struct=Thing -table=things -omitFromInsert=Length,Height
 
 // Thing is a normal thing
 type Thing struct {

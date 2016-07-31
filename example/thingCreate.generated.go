@@ -3,7 +3,7 @@ package example
 // GENERATED CODE, EDITS WILL BE LOST
 //
 // generated from example/Thing
-// using http://github.com/brianstarke/go-beget/beget
+// using http://github.com/brianstarke/go-beget
 
 import (
 	"database/sql"

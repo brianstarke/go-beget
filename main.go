@@ -51,7 +51,7 @@ func main() {
 		log.Fatal("`struct` and `tableName` must be specified")
 	}
 
-	log.Printf("Generating methods for %s", ansi.Color(*structName, "155+b"))
+	log.Printf("Generating PENIS for %s", ansi.Color(*structName, "155+b"))
 
 	data, err := gatherStructData(*structName)
 
@@ -88,6 +88,11 @@ func main() {
 
 	var wg sync.WaitGroup
 	wg.Add(4)
+
+	eh, err := os.Stat("../search.generated.go")
+
+	log.Println(eh)
+	log.Println(err)
 
 	if _, err := os.Stat("../search.generated.go"); os.IsNotExist(err) {
 		wg.Add(1)

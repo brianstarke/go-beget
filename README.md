@@ -7,7 +7,7 @@ Generate serializable and (somewhat) typesafe search requests to pass around.
 
 The intent is not to create an ORM, but rather provide a forkable baseline to help generate all your boilerplate just the way you like it.
 
-### The basics
+## Getting started / Overview
 
 Install `beget` by running `go get -u github.com/brianstarke/go-beget/generator`
 
@@ -17,14 +17,12 @@ Add the `go:generate beget` comment, tag all fields with `db` and `json` tags if
 
 - _(currently, **sql** statement generation/execution only works on PostgreSQL)_
 
-Within the `beget` tag, add **search** to the fields you'd like to be searchable, **create** to the fields you'd like to be inserted by the generated **Creator** and **update** to the fields you want to allow to updated via an **Updater**.  
-
-Generally you'd leave the `ID` field without a **create** tag if your database is assigning the IDs.
+Create functions will automatically omit `ID` and `CreatedAt` fields from the **INSERT** statement.  If you wish to omit additional fields, pass them in to the `omitFromInsert` flag (separated by commas).
 
 ```go
 package model
 
-//go:generate beget -struct=Thing -table=things -omitFromInsert=Length,Height
+//go:generate go-beget -struct=Thing -table=things -omitFromInsert=Length,Height
 
 // Thing is a normal thing
 type Thing struct {
@@ -37,27 +35,22 @@ type Thing struct {
 }
 ```
 
-For now, `go-beget` will generate it's code into the same package and directory as the one your struct is in.
+`go-beget` currently generates it's code into the same package and directory as the one your struct is in.
 
 Run `go generate ./...`
 
 ```
-[go-beget/searcher] Generating searcher for Thing
-[go-beget/searcher] ../search does not exist, I'll create it
-[go-beget/searcher] Generated search_enums [../search/searcherEnums.go]
-[go-beget/searcher] Searcher generated [../search/thingSearcher.go]
-[go-beget/creator] Generating creator for Thing
-[go-beget/creator] ../create does not exist, I'll create it
-[go-beget/creator] SQLCreator generated ../create/thingSQLCreator.go
-[go-beget/creator] GinCreator generated ../create/thingGinCreator.go
-[go-beget/updater] Generating updater for Thing
-[go-beget/updater] ../update does not exist, I'll create it
-[go-beget/updater] UpdateRequest generated ../update/thingUpdateRequest.go
-[go-beget/updater] SQLUpdater generated ../update/thingSQLUpdater.go
-[go-beget/updater] GinUpdater generated ../update/thingGinUpdater.go
+[go-beget/generator] Generating methods for Thing
+[go-beget/generator] create generated		[thingCreate.generated.go]
+[go-beget/generator] fields generated		[thingFields.generated.go]
+[go-beget/generator] enums generated		[search.generated.go]
+[go-beget/generator] update generated		[thingUpdate.generated.go]
+[go-beget/generator] search generated		[thingSearch.generated.go]
 ```
 
-Example of using a generated search request.
+## Search Requests
+
+Using a generated SearchRequest like so...
 
 ```go
 package main
@@ -66,19 +59,19 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/brianstarke/go-beget/example/search"
+	"github.com/brianstarke/go-beget/example"
 )
 
 func main() {
-	var sr search.ThingSearchRequest
+	var sr example.ThingSearchRequest
 
 	sr.
-		AddFields(search.ThingColor, search.ThingHeight).
-		AddFilter(search.ThingColor, "red", func(f *search.ThingFilter) {
-			f.Operator = search.EQ
-			f.Condition = search.AND
+		AddFields(example.ThingColor, example.ThingHeight).
+		AddFilter(example.ThingColor, "red", func(f *example.ThingFilter) {
+			f.Operator = example.Eq
+			f.Condition = example.Or
 		}).
-		SetOrderBy(search.ThingHeight, false).
+		SetOrderBy(example.ThingHeight, false).
 		SetLimit(10)
 
 	jsonb, _ := json.MarshalIndent(sr, "", "  ")
@@ -91,10 +84,10 @@ func main() {
 }
 ```
 
-This outputs
+Would output:
 
 ```
-2016/07/26 08:42:55 {
+2016/07/31 17:00:39 {
   "fields": [
     "color",
     "height"
@@ -103,8 +96,8 @@ This outputs
     {
       "field": "color",
       "value": "red",
-      "operator": "EQ",
-      "condition": "AND"
+      "operator": "eq",
+      "condition": "OR"
     }
   ],
   "orderBy": {
@@ -114,7 +107,7 @@ This outputs
   "limit": 10,
   "offset": 0
 }
-2016/07/26 08:42:55 SELECT color, height FROM things WHERE (color = $1) ORDER BY height LIMIT 10
+2016/07/31 17:00:39 SELECT color, height FROM things WHERE (color = $1) ORDER BY height LIMIT 10
 ```
 
 ### Using SQLSearchers

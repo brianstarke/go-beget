@@ -8,5 +8,5 @@ rm example/thingUpdate.generated.go
 
 go-bindata -pkg templates -o templates/bindata.go templates/*.tmpl
 
-go install ./...
+go install
 go generate ./...
