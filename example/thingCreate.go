@@ -11,7 +11,7 @@ import (
 	"github.com/lann/squirrel"
 )
 
-var insertColumnsThing = [2]string{
+var insertColumnsThing = []string{
 	"color",
 	"description",
 }

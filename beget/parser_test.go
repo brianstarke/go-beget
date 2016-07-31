@@ -31,7 +31,7 @@ func TestGetImportPath(t *testing.T) {
 	path, err := getImportPath()
 
 	assert.NoError(err, "should not error when trying to find the import path")
-	assert.Equal("github.com/brianstarke/go-beget/generator", path)
+	assert.Equal("github.com/brianstarke/go-beget/beget", path)
 }
 
 func TestParseStructFields(t *testing.T) {

@@ -13,7 +13,7 @@ import (
 
 {{$numFields := len .Fields}}
 
-var insertColumns{{.TypeName}} = [{{$numFields}}]string{
+var insertColumns{{.TypeName}} = []string{
 	{{range $i, $x := .Fields}}"{{$x.DbName}}",
 	{{end}}
 }
