@@ -11,10 +11,10 @@ import (
 	"github.com/lann/squirrel"
 )
 
-{{$numFields := len .Fields}}
+{{$numFields := len .InsertFields}}
 
 var insertColumns{{.TypeName}} = []string{
-	{{range $i, $x := .Fields}}"{{$x.DbName}}",
+	{{range $i, $x := .InsertFields}}"{{$x.DbName}}",
 	{{end}}
 }
 
@@ -22,7 +22,7 @@ var insertColumns{{.TypeName}} = []string{
 func (c *{{.TypeName}}) Create{{.TypeName}}(db *sql.DB) (int64, error) {
 	query := squirrel.Insert("{{.TableName}}").
 		Columns(insertColumns{{.TypeName}}...).
-		Values({{range $i, $x := .Fields}}c.{{$x.Name}}{{if lt $i $numFields}},{{end}}{{end}}).
+		Values({{range $i, $x := .InsertFields}}c.{{$x.Name}}{{if lt $i $numFields}},{{end}}{{end}}).
 		Suffix("RETURNING \"id\"").
 		RunWith(db).
 		PlaceholderFormat(squirrel.Dollar)

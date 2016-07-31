@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"sync"
 
 	"go/format"
 
@@ -33,10 +34,11 @@ TemplateData is comprised of the metadata needed during generation of both
 the SearchRequest and the Searcher types.
 */
 type TemplateData struct {
-	PackageName string
-	TypeName    string
-	TableName   string
-	Fields      []Field
+	PackageName  string
+	TypeName     string
+	TableName    string
+	Fields       []Field
+	InsertFields []Field
 }
 
 func main() {
@@ -66,136 +68,7 @@ func main() {
 		Fields:      data.Fields,
 	}
 
-	createFields(tmplData)
-	createSearchEnums(tmplData)
-	createSearch(tmplData)
-	createCreate(tmplData)
-}
-
-func createSearchEnums(tmplData TemplateData) {
-	if _, err := os.Stat("../searchEnums.go"); !os.IsNotExist(err) {
-		return
-	}
-
-	t, err := templates.Asset("templates/searchEnums.tmpl")
-
-	if err != nil {
-		panic(err)
-	}
-
-	searchRequestTmpl, err := template.New("searchEnums").Parse(string(t))
-
-	if err != nil {
-		panic(err)
-	}
-
-	b := []byte{}
-	buf := bytes.NewBuffer(b)
-
-	err = searchRequestTmpl.Execute(buf, tmplData)
-
-	if err != nil {
-		panic(err)
-	}
-
-	outputBytes, err := format.Source(buf.Bytes())
-
-	if err != nil {
-		panic(err)
-	}
-
-	output := fmt.Sprintf("searchEnums.go")
-	err = ioutil.WriteFile(output, outputBytes, 0644)
-
-	if err != nil {
-		panic(err)
-	}
-
-	log.Printf("Generated searchRequestEnums [%s]", ansi.Color(output, "155+b"))
-}
-
-func createFields(tmplData TemplateData) {
-	t, err := templates.Asset("templates/fields.tmpl")
-
-	tmpl, err := template.New("fields").Parse(string(t))
-
-	if err != nil {
-		panic(err)
-	}
-
-	b := []byte{}
-	buf := bytes.NewBuffer(b)
-
-	err = tmpl.Execute(buf, tmplData)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	outputBytes, err := format.Source(buf.Bytes())
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	output := fmt.Sprintf("%sFields.go", strings.ToLower(tmplData.TypeName))
-	err = ioutil.WriteFile(output, outputBytes, 0644)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("Fields generated [%s]", ansi.Color(output, "155+b"))
-}
-
-func createSearch(tmplData TemplateData) {
-	t, err := templates.Asset("templates/search.tmpl")
-
-	tmpl, err := template.New("search").Parse(string(t))
-
-	if err != nil {
-		panic(err)
-	}
-
-	b := []byte{}
-	buf := bytes.NewBuffer(b)
-
-	err = tmpl.Execute(buf, tmplData)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	outputBytes, err := format.Source(buf.Bytes())
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	output := fmt.Sprintf("%sSearch.go", strings.ToLower(tmplData.TypeName))
-	err = ioutil.WriteFile(output, outputBytes, 0644)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("Search generated [%s]", ansi.Color(output, "155+b"))
-}
-
-func createCreate(tmplData TemplateData) {
-	t, err := templates.Asset("templates/create.tmpl")
-
-	tmpl, err := template.New("create").Parse(string(t))
-
-	if err != nil {
-		panic(err)
-	}
-
-	b := []byte{}
-	buf := bytes.NewBuffer(b)
-
 	// strip out ID, CreatedAt, and anything listed in omitFromInsert flag
-	var createableFields []Field
 	omitFields := map[string]struct{}{
 		"ID":        {},
 		"CreatedAt": {},
@@ -209,42 +82,36 @@ func createCreate(tmplData TemplateData) {
 
 	for _, f := range tmplData.Fields {
 		if _, ok := omitFields[f.Name]; !ok {
-			createableFields = append(createableFields, f)
+			tmplData.InsertFields = append(tmplData.InsertFields, f)
 		}
 	}
 
-	tmplData.Fields = createableFields
+	var wg sync.WaitGroup
+	wg.Add(4)
 
-	err = tmpl.Execute(buf, tmplData)
-
-	if err != nil {
-		log.Fatal(err)
+	if _, err := os.Stat("../search.generated.go"); os.IsNotExist(err) {
+		wg.Add(1)
+		go generateFromTemplate("enums", tmplData, &wg)
 	}
 
-	outputBytes, err := format.Source(buf.Bytes())
+	go generateFromTemplate("fields", tmplData, &wg)
+	go generateFromTemplate("search", tmplData, &wg)
+	go generateFromTemplate("create", tmplData, &wg)
+	go generateFromTemplate("update", tmplData, &wg)
 
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	output := fmt.Sprintf("%sCreate.go", strings.ToLower(tmplData.TypeName))
-	err = ioutil.WriteFile(output, outputBytes, 0644)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("Create generated [%s]", ansi.Color(output, "155+b"))
+	wg.Wait()
 }
 
-func createUpdateRequest(tmplData TemplateData) {
-	t, err := templates.Asset("templates/update.tmpl")
+func generateFromTemplate(tmplName string, tmplData TemplateData, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	t, err := templates.Asset(fmt.Sprintf("templates/%s.tmpl", tmplName))
 
 	if err != nil {
 		panic(err)
 	}
 
-	updateRequestTmpl, err := template.New("update").Parse(string(t))
+	tmpl, err := template.New(tmplName).Parse(string(t))
 
 	if err != nil {
 		panic(err)
@@ -253,7 +120,7 @@ func createUpdateRequest(tmplData TemplateData) {
 	b := []byte{}
 	buf := bytes.NewBuffer(b)
 
-	err = updateRequestTmpl.Execute(buf, tmplData)
+	err = tmpl.Execute(buf, tmplData)
 
 	if err != nil {
 		panic(err)
@@ -265,12 +132,22 @@ func createUpdateRequest(tmplData TemplateData) {
 		panic(err)
 	}
 
-	output := fmt.Sprintf("%sUpdateRequest.go", strings.ToLower(tmplData.TypeName))
+	var output string
+
+	if tmplName == "enums" {
+		output = "search.generated.go"
+	} else {
+		output = fmt.Sprintf(
+			"%s%s.generated.go",
+			strings.ToLower(tmplData.TypeName),
+			strings.Title(tmplName))
+	}
+
 	err = ioutil.WriteFile(output, outputBytes, 0644)
 
 	if err != nil {
 		panic(err)
 	}
 
-	log.Printf("UpdateRequest generated %s", ansi.Color(output, "155+b"))
+	log.Printf("%s generated \t[%s]", tmplName, ansi.Color(output, "155+b"))
 }

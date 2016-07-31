@@ -308,7 +308,7 @@ func NewThingSearchHandlerFunc(db *sql.DB) http.HandlerFunc {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		fmt.Print(string(jsonResults))
+		fmt.Fprintf(w, string(jsonResults))
 
 		return
 	}
