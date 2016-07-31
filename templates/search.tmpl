@@ -27,59 +27,6 @@ type {{.TypeName}}SearchRequest struct {
 	Offset int `json:"offset"`
 }
 
-// {{.TypeName}}Field is a field within the {{.TypeName}} struct
-// that is able to be filtered on, sorted on, or returned.
-type {{.TypeName}}Field int
-
-// Faux enum'd for helpfulness
-const ({{$typeName := .TypeName}}
-{{range $i, $x := .Fields}}{{$typeName}}{{$x.Name}} {{if eq $i 0}}{{$typeName}}Field = iota{{end}}
-{{end}})
-
-
-// JSON name constants
-const ({{$typeName := .TypeName}}
-{{range $i, $x := .Fields}}c{{$x.Name}} string = "{{$x.JSONName}}"
-{{end}})
-
-// DbFieldName returns the name of the field to use in the SQL query
-func (s {{.TypeName}}Field) DbFieldName() string {
-	switch s {
-	{{range $i, $x := .Fields}}case {{$typeName}}{{$x.Name}}:
-		return "{{$x.DbName}}"
-	{{end}}
-	}
-	return ""
-}
-
-// MarshalText implements https://golang.org/pkg/encoding/#TextMarshaler
-func (s {{.TypeName}}Field) MarshalText() ([]byte, error) {
-	var data string
-
-	switch s {
-	{{range $i, $x := .Fields}}case {{$typeName}}{{$x.Name}}:
-		data = c{{$x.Name}}
-	{{end}}
-	default:
-		return nil, fmt.Errorf("Unable to marshal `%v` in to bytes", s)
-	}
-	return []byte(data), nil
-}
-
-// UnmarshalText implements https://golang.org/pkg/encoding/#TextUnmarshaler
-func (s *{{.TypeName}}Field) UnmarshalText(b []byte) error {
-	str := strings.Trim(string(b), `"`)
-
-	switch str {
-	{{range $i, $x := .Fields}}case c{{$x.Name}}:
-		*s = {{$typeName}}{{$x.Name}}
-	{{end}}
-	default:
-		return fmt.Errorf("Unable to marshal '%s' into type {{.TypeName}}Field", str)
-	}
-	return nil
-}
-
 // {{.TypeName}}Filter is a filter specific to {{.TypeName}}
 type {{.TypeName}}Filter struct {
 	Field {{.TypeName}}Field `json:"field"`

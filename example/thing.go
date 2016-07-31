@@ -11,5 +11,5 @@ type Thing struct {
 	Description string    `json:"description" db:"description"`
 	Length      int       `json:"length" db:"length"`
 	Height      int       `json:"height" db:"height"`
-	CreatedAt   time.Time `json:"createdAd" db:"created_at_utc"`
+	CreatedAt   time.Time `json:"createdAt" db:"created_at_utc"`
 }

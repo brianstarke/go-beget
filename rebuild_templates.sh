@@ -1,6 +1,7 @@
 #!/bin/bash
 
 rm example/searchEnums.go
+rm example/thingFields.go
 rm example/thingSearch.go
 rm example/thingCreate.go
 

@@ -66,6 +66,8 @@ func main() {
 		Fields:      data.Fields,
 	}
 
+	createFields(tmplData)
+	createSearchEnums(tmplData)
 	createSearch(tmplData)
 	createCreate(tmplData)
 }
@@ -112,9 +114,41 @@ func createSearchEnums(tmplData TemplateData) {
 	log.Printf("Generated searchRequestEnums [%s]", ansi.Color(output, "155+b"))
 }
 
-func createSearch(tmplData TemplateData) {
-	createSearchEnums(tmplData)
+func createFields(tmplData TemplateData) {
+	t, err := templates.Asset("templates/fields.tmpl")
 
+	tmpl, err := template.New("fields").Parse(string(t))
+
+	if err != nil {
+		panic(err)
+	}
+
+	b := []byte{}
+	buf := bytes.NewBuffer(b)
+
+	err = tmpl.Execute(buf, tmplData)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	outputBytes, err := format.Source(buf.Bytes())
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	output := fmt.Sprintf("%sFields.go", strings.ToLower(tmplData.TypeName))
+	err = ioutil.WriteFile(output, outputBytes, 0644)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("Fields generated [%s]", ansi.Color(output, "155+b"))
+}
+
+func createSearch(tmplData TemplateData) {
 	t, err := templates.Asset("templates/search.tmpl")
 
 	tmpl, err := template.New("search").Parse(string(t))
