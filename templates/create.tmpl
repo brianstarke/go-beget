@@ -6,35 +6,30 @@ package {{.PackageName}}
 // using http://github.com/brianstarke/go-beget/beget
 
 import (
-	"github.com/jmoiron/sqlx"
-	"github.com/brianstarke/go-beget/creator"
+	"database/sql"
 
-	types "{{.TypeImport}}"
+	"github.com/lann/squirrel"
 )
 
-// {{.TypeName}}Creator defines the interface for this creator
-type {{.TypeName}}Creator interface {
-	Create(c types.{{.TypeName}}) (int64, error)
+{{$numFields := len .Fields}}
+
+var insertColumns{{.TypeName}} = [{{$numFields}}]string{
+	{{range $i, $x := .Fields}}"{{$x.DbName}}",
+	{{end}}
 }
 
-// SQL{{.TypeName}}Creator implements a SQL creator
-type SQL{{.TypeName}}Creator struct {
-	db *sqlx.DB
-}
+// Create{{.TypeName}} inserts a {{.TypeName}} in to the database
+func (c *{{.TypeName}}) Create{{.TypeName}}(db *sql.DB) (int64, error) {
+	query := squirrel.Insert("{{.TableName}}").
+		Columns(insertColumns{{.TypeName}}...).
+		Values({{range $i, $x := .Fields}}c.{{$x.Name}}{{if lt $i $numFields}},{{end}}{{end}}).
+		Suffix("RETURNING \"id\"").
+		RunWith(db).
+		PlaceholderFormat(squirrel.Dollar)
 
-// NewSQL{{.TypeName}}Creator returns a SQL based {{.TypeName}}Creator
-func NewSQL{{.TypeName}}Creator(db *sqlx.DB) {{.TypeName}}Creator {
-	return &SQL{{.TypeName}}Creator{db:db}
-}
+	var id int64
 
-{{$numFields := len .CreatableFields}}
+	err := query.QueryRow().Scan(&id)
 
-// Create inserts a {{.TypeName}} record in to the database
-func (r *SQL{{.TypeName}}Creator) Create(c types.{{.TypeName}}) (int64, error) {
-	columns := []string{
-		{{range $i, $x := .CreatableFields}}"{{$x.DbName}}",
-		{{end}}
-	}
-
-	return creator.Insert(r.db.DB, "{{.TableName}}", columns, {{range $i, $x := .CreatableFields}}c.{{$x.Name}}{{if lt $i $numFields}},{{end}}{{end}})
+	return id, err
 }

@@ -20,6 +20,7 @@ import (
 var (
 	structName = flag.String("struct", "", "name of the struct to generate a searcher for")
 	tableName  = flag.String("table", "", "SQL table name")
+	omitInsert = flag.String("omitFromInsert", "", "Comma separated list of fields to omit from insert in the create function")
 
 	logPrefix = "[" +
 		ansi.Color("go-beget", "154") +
@@ -57,8 +58,8 @@ func main() {
 
 	flag.Parse()
 
-	if len(*structName) == 0 {
-		log.Fatal("`struct` must be specified")
+	if len(*structName) == 0 || len(*tableName) == 0 {
+		log.Fatal("`struct` and `tableName` must be specified")
 	}
 
 	log.Printf("Generating searcher for %s", ansi.Color(*structName, "155+b"))
@@ -81,7 +82,8 @@ func main() {
 		Fields:      fields,
 	}
 
-	createSearcher(tmplData)
+	createSearch(tmplData)
+	createCreate(tmplData)
 }
 
 func gatherFields(f []structField) []Field {
@@ -123,7 +125,7 @@ func gatherFields(f []structField) []Field {
 	return fields
 }
 
-func createSearcherEnums(tmplData TemplateData) {
+func createSearchEnums(tmplData TemplateData) {
 	if _, err := os.Stat("../searchEnums.go"); !os.IsNotExist(err) {
 		return
 	}
@@ -165,12 +167,12 @@ func createSearcherEnums(tmplData TemplateData) {
 	log.Printf("Generated searchRequestEnums [%s]", ansi.Color(output, "155+b"))
 }
 
-func createSearcher(tmplData TemplateData) {
-	createSearcherEnums(tmplData)
+func createSearch(tmplData TemplateData) {
+	createSearchEnums(tmplData)
 
-	t, err := templates.Asset("templates/searchRequest.tmpl")
+	t, err := templates.Asset("templates/search.tmpl")
 
-	tmpl, err := template.New("searcher").Parse(string(t))
+	tmpl, err := template.New("search").Parse(string(t))
 
 	if err != nil {
 		panic(err)
@@ -191,14 +193,14 @@ func createSearcher(tmplData TemplateData) {
 		log.Fatal(err)
 	}
 
-	output := fmt.Sprintf("%sSearchRequest.go", strings.ToLower(tmplData.TypeName))
+	output := fmt.Sprintf("%sSearch.go", strings.ToLower(tmplData.TypeName))
 	err = ioutil.WriteFile(output, outputBytes, 0644)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("SearchRequest generated [%s]", ansi.Color(output, "155+b"))
+	log.Printf("Search generated [%s]", ansi.Color(output, "155+b"))
 }
 
 func createCreate(tmplData TemplateData) {
@@ -212,6 +214,27 @@ func createCreate(tmplData TemplateData) {
 
 	b := []byte{}
 	buf := bytes.NewBuffer(b)
+
+	// strip out ID, CreatedAt, and anything listed in omitFromInsert flag
+	var createableFields []Field
+	omitFields := map[string]struct{}{
+		"ID":        {},
+		"CreatedAt": {},
+	}
+
+	if len(*omitInsert) > 0 {
+		for _, s := range strings.Split(*omitInsert, ",") {
+			omitFields[s] = struct{}{}
+		}
+	}
+
+	for _, f := range tmplData.Fields {
+		if _, ok := omitFields[f.Name]; !ok {
+			createableFields = append(createableFields, f)
+		}
+	}
+
+	tmplData.Fields = createableFields
 
 	err = tmpl.Execute(buf, tmplData)
 
@@ -232,7 +255,7 @@ func createCreate(tmplData TemplateData) {
 		log.Fatal(err)
 	}
 
-	log.Printf("Creator generated %s", ansi.Color(output, "155+b"))
+	log.Printf("Create generated [%s]", ansi.Color(output, "155+b"))
 }
 
 func createUpdateRequest(tmplData TemplateData) {
