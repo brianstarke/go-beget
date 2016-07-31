@@ -7,11 +7,9 @@ import (
 )
 
 type TestStruct struct {
-	Searchable string `beget:"search" db:"searchable" json:"searchable"`
-	Createable string `beget:"create" db:"creatable" json:"creatable"`
-	Updateable string `beget:"update" db:"updateable" json:"updateable"`
-	Allable    string `beget:"search,create,update" db:"allable" json:"allable"`
-	NotParsed  string
+	One     string `db:"field_one" json:"fieldOne"`
+	Two     string `db:"field_two" json:"fieldTwo"`
+	Nothing string
 }
 
 func TestFindFile(t *testing.T) {
@@ -47,17 +45,11 @@ func TestParseStructFields(t *testing.T) {
 	fields := parseStructFields(f, "TestStruct")
 
 	assert.NoError(err, "should not error when parsing struct fields")
-	assert.Len(fields, 4)
+	assert.Len(fields, 2)
 
-	assert.Equal("Searchable", fields[0].Name)
-	assert.Equal("search", fields[0].Tags["beget"])
+	assert.Equal("One", fields[0].Name)
+	assert.Equal("fieldOne", fields[0].Tags["json"])
 
-	assert.Equal("Createable", fields[1].Name)
-	assert.Equal("create", fields[1].Tags["beget"])
-
-	assert.Equal("Updateable", fields[2].Name)
-	assert.Equal("update", fields[2].Tags["beget"])
-
-	assert.Equal("Allable", fields[3].Name)
-	assert.Equal("search,create,update", fields[3].Tags["beget"])
+	assert.Equal("Two", fields[1].Name)
+	assert.Equal("field_two", fields[1].Tags["db"])
 }
