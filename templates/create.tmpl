@@ -7,6 +7,10 @@ package {{.PackageName}}
 
 import (
 	"database/sql"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 
 	"github.com/lann/squirrel"
 )
@@ -18,8 +22,8 @@ var insertColumns{{.TypeName}} = []string{
 	{{end}}
 }
 
-// Create{{.TypeName}} inserts a {{.TypeName}} in to the database
-func (c *{{.TypeName}}) Create{{.TypeName}}(db *sql.DB) (int64, error) {
+// Create inserts a {{.TypeName}} in to the database
+func (c *{{.TypeName}}) Create(db *sql.DB) (int64, error) {
 	query := squirrel.Insert("{{.TableName}}").
 		Columns(insertColumns{{.TypeName}}...).
 		Values({{range $i, $x := .InsertFields}}c.{{$x.Name}}{{if lt $i $numFields}},{{end}}{{end}}).
@@ -32,4 +36,53 @@ func (c *{{.TypeName}}) Create{{.TypeName}}(db *sql.DB) (int64, error) {
 	err := query.QueryRow().Scan(&id)
 
 	return id, err
+}
+
+// New{{.TypeName}}CreateHandlerFunc returns an HTTP handler func for
+// {{.TypeName}} record creations. It returns 200 and the results
+// on success, 400 on bad JSON, 500 on any other error.
+func New{{.TypeName}}CreateHandlerFunc(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		b, err := ioutil.ReadAll(r.Body)
+
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprint(w, "No {{.TypeName}} in the request body")
+			return
+		}
+
+		var t {{.TypeName}}
+		err = json.Unmarshal(b, &t)
+
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Error deserializing {{.TypeName}}: %s", err.Error())
+			return
+		}
+
+		id, err := t.Create(db)
+
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Error executing create request: %s", err.Error())
+			return
+		}
+
+		jsonResult, err := json.Marshal(struct{
+			ID int64 `json:"id"`
+		}{
+			ID: id,
+		})
+
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Error serializing create results: %s", err.Error())
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, string(jsonResult))
+
+		return
+	}
 }

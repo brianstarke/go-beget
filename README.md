@@ -206,8 +206,7 @@ Then `./rebuild_templates.sh` from the root of this project.
 ### TODO
 
 - add getByID function
+- add deleteByID function?
 - make ID field configurable
-- make all generated code pass golint
-- break dependency on sqlx?
-- generate deleters?
+- break search dependency on sqlx
 - add fake/mock implementations for testing?
