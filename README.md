@@ -11,6 +11,8 @@ This is still a work in progress.
 
 ### The basics
 
+Install `beget` by running `go get -u github.com/brianstarke/go-beget/...`
+
 Add `beget` tags to a struct for which you want to create `SearchRequests` for and add the `go:generate` comment.
 
 `struct` is the struct you want the `go-beget` generator to look at, `table` is the name of the database table (if you want to use optional SQL statement generation).  `impls` takes a comma separated list of helpers you'd like to auto-generate.  
