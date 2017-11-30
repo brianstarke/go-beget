@@ -1,3 +1,8 @@
+
+# NOTICE 
+
+This repo is no longer maintained, I personally vastly prefer [https://gnorm.org/](gnorm) over my own solution and recommend checking it out.
+
 # go-beget
 
 [![GoDoc](https://godoc.org/github.com/brianstarke/go-beget?status.svg)](https://godoc.org/github.com/brianstarke/go-beget)
@@ -6,8 +11,6 @@
 Generate serializable and (somewhat) typesafe search requests to pass around.
 
 The intent is not to recreate Rails, but rather provide a baseline for you to fork to help generate all your boilerplate just the way you like it.
-
-This is still a work in progress.
 
 ### The basics
 
